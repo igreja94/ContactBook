@@ -1,8 +1,9 @@
-﻿using Domain.Enums;
+﻿using Domain.Entities.Interfaces;
+using Domain.Enums;
 
 namespace Domain.Entities
 {
-    public class User
+    public class User : IModel
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public string PasswordHash { get; set; } = string.Empty;
