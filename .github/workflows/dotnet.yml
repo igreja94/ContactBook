@@ -21,11 +21,8 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Restore dependencies
-      run: dotnet restore
-      working-directory: ./src
+      run: dotnet restore ./src/ContactBook.slnx
     - name: Build
-      run: dotnet build --no-restore
-      working-directory: ./src
+      run: dotnet build ./src/ContactBook.slnx --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
-      working-directory: ./src
+      run: dotnet test ./src/ContactBook.slnx --no-build --verbosity normal
