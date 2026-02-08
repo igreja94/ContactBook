@@ -15,6 +15,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.Services.ApplyMigrations();
+
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
