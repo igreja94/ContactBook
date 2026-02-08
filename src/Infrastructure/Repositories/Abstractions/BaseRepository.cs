@@ -7,17 +7,17 @@ namespace Infrastructure.Repositories.Abstractions
 {
     public abstract class BaseRepository<TModel>(ApplicationDbContext context) : IRepository<TModel> where TModel : class, IModel
     {
-        protected readonly ApplicationDbContext _context = context;
-        protected readonly DbSet<TModel> _dbSet = context.Set<TModel>();
+        protected readonly ApplicationDbContext Context = context;
+        protected readonly DbSet<TModel> DbSet = context.Set<TModel>();
 
         public virtual async Task<IEnumerable<TModel>> GetAll()
         {
-            return [.. _dbSet];
+            return [.. DbSet];
         }
 
         public virtual async Task<TModel> GetById(Guid id)
         {
-            return _dbSet.Find(id) ??
+            return DbSet.Find(id) ??
                 throw new KeyNotFoundException($"Entity of type {typeof(TModel).Name} with ID {id} was not found.");
         }
 
@@ -25,24 +25,24 @@ namespace Infrastructure.Repositories.Abstractions
         {
             ArgumentNullException.ThrowIfNull(model);
 
-            _dbSet.Add(model);
-            _context.SaveChanges();
+            DbSet.Add(model);
+            Context.SaveChanges();
         }
 
         public virtual async Task Update(TModel model)
         {
             ArgumentNullException.ThrowIfNull(model);
 
-            _dbSet.Update(model);
-            _context.SaveChanges();
+            DbSet.Update(model);
+            Context.SaveChanges();
         }
 
         public virtual async Task Delete(TModel model)
         {
             ArgumentNullException.ThrowIfNull(model);
 
-            _dbSet.Remove(model);
-            _context.SaveChanges();
+            DbSet.Remove(model);
+            Context.SaveChanges();
         }
     }
 }
