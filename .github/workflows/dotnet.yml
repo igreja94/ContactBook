@@ -1,7 +1,7 @@
 # This workflow will build a .NET project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
 
-name: .NET + Docker
+name: .NET - Docker 
 
 on:
   pull_request:
@@ -26,7 +26,7 @@ jobs:
     - name: Build
       run: dotnet build ./src/ContactBook.slnx --no-restore
     - name: Test
-      run: dotnet test ./src/ContactBook.slnx --no-build --verbosity normal
+      run: dotnet test ./src/ContactBook.slnx --no-build --verbosity detailed
 
   versioning:
     runs-on: ubuntu-latest
@@ -34,15 +34,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Install GitVersion
-      run: |
-        curl -sSL https://github.com/GitTools/GitVersion/releases/download/v5.6.0/gitversion-5.6.0-linux-x64.tar.gz | tar -xz -C /tmp/
-        sudo mv /tmp/gitversion /usr/local/bin/gitversion
+    - name: Setup GitVersion
+      uses: gittools/actions/gitversion@v0.9.9 
+      id: gitversion
 
     - name: Get version info
       id: version
       run: |
-        VERSION=$(gitversion /showvariable SemVer)
+        VERSION="${{ steps.gitversion.outputs.semver }}"
+        echo "Version: $VERSION"
         
         if [[ "${{ github.event_name }}" == "pull_request" ]]; then
           echo "Versioning for PR: $VERSION"
