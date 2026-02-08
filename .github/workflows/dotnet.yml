@@ -1,17 +1,18 @@
 # This workflow will build a .NET project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
 
-name: .NET
+name: .NET + Docker
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main  # Trigger on PR to main
+  push:
+    branches:
+      - main  # Trigger on merge to main
 
 jobs:
   restore-build-test:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -26,3 +27,64 @@ jobs:
       run: dotnet build ./src/ContactBook.slnx --no-restore
     - name: Test
       run: dotnet test ./src/ContactBook.slnx --no-build --verbosity normal
+
+  versioning:
+    runs-on: ubuntu-latest
+    needs: restore-build-test
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install GitVersion
+      run: |
+        curl -sSL https://github.com/GitTools/GitVersion/releases/download/v5.6.0/gitversion-5.6.0-linux-x64.tar.gz | tar -xz -C /tmp/
+        sudo mv /tmp/gitversion /usr/local/bin/gitversion
+
+    - name: Get version info
+      id: version
+      run: |
+        VERSION=$(gitversion /showvariable SemVer)
+        
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          echo "Versioning for PR: $VERSION"
+        elif [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
+          VERSION="latest"
+          echo "Versioning for main merge: $VERSION"
+        fi
+        
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+  build-docker-image:
+    runs-on: ubuntu-latest
+    needs: versioning
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    - name: Cache Docker layers
+      uses: actions/cache@v3
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-docker-${{ hashFiles('Dockerfile') }}
+        restore-keys: |
+          ${{ runner.os }}-docker-
+    - name: Build Docker image
+      run: |
+        docker build -t my-app-image:${{ env.VERSION }} .
+        # Optionally, push to Docker registry
+        # docker push my-docker-repo/my-app-image:${{ env.VERSION }}
+
+  tag-version:
+    runs-on: ubuntu-latest
+    needs: versioning
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Tag commit with version
+      run: |
+        # For merges to main, tag as "latest"
+        git tag ${{ env.VERSION }}
+        git push origin ${{ env.VERSION }}
+        git tag latest
+        git push origin latest
