@@ -1,6 +1,8 @@
-﻿namespace Domain.Entities
+﻿using Domain.Entities.Interfaces;
+
+namespace Domain.Entities
 {
-    public class Contact
+    public class Contact : IModel
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public string FirstName { get; set; } = string.Empty;
