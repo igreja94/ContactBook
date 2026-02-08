@@ -31,6 +31,8 @@ jobs:
     needs: restore-build-test
     if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     
     steps:
     - uses: actions/checkout@v4
@@ -47,8 +49,6 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: ghcr.io/${{ github.repository }}
-      env:
-        DOCKER_METADATA_PRERELEASE_VERSION: true
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
