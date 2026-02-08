@@ -14,36 +14,31 @@ namespace WebApi.Controllers.Abstractions
         [HttpGet]
         public virtual ActionResult<IEnumerable<TDto>> GetAll()
         {
-            return Ok(_service.GetAll());
+            throw new NotImplementedException();
         }
 
         [HttpGet("{id}")]
         public virtual ActionResult<TDto> GetById(int id)
         {
-            var result = _service.GetById(id);
-            if (result == null) return NotFound();
-            return Ok(result);
+            throw new NotImplementedException();
         }
 
         [HttpPost]
         public virtual IActionResult Create([FromBody] TDto dto)
         {
-            _service.Create(dto);
-            return CreatedAtAction(nameof(GetById), new { id = 0 }, dto); // Simplified for example
+            throw new NotImplementedException();
         }
 
         [HttpPut]
         public virtual IActionResult Update([FromBody] TDto dto)
         {
-            _service.Update(dto);
-            return NoContent();
+            throw new NotImplementedException();
         }
 
         [HttpDelete("{id}")]
         public virtual IActionResult Delete(int id)
         {
-            _service.Delete(id);
-            return NoContent();
+            throw new NotImplementedException();
         }
     }
 }
