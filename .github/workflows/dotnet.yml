@@ -10,19 +10,37 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-test-dotnet:
-
+  restore:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-    - name: Restore dependencies
-      run: dotnet restore ./src/ContactBook.slnx
-    - name: Build
-      run: dotnet build ./src/ContactBook.slnx --no-restore
-    - name: Test
-      run: dotnet test ./src/ContactBook.slnx --no-build --verbosity normal
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore dependencies
+        run: dotnet restore ./src/ContactBook.slnx
+
+  build:
+    runs-on: ubuntu-latest
+    needs: restore  # This makes sure the restore job runs before build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Build
+        run: dotnet build ./src/ContactBook.slnx --no-restore
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build  # This ensures the build job completes before testing
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Test
+        run: dotnet test ./src/ContactBook.slnx --no-build --verbosity normal
