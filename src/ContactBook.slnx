@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="../Infrastructure.Tests/Infrastructure.Tests.csproj" Id="47602e2b-1c0a-46c0-acb5-474ecca7c7a2" />
   <Project Path="API/API.csproj" />
   <Project Path="Application/Application.csproj" />
   <Project Path="docker-compose.dcproj">
@@ -6,5 +7,4 @@
   </Project>
   <Project Path="Domain/Domain.csproj" />
   <Project Path="Infrastructure/Infrastructure.csproj" />
-  <Project Path="Tests/Tests.csproj" />
 </Solution>

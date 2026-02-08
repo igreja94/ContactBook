@@ -4,10 +4,10 @@ namespace Infrastructure.Repositories.Interfaces
 {
     public interface IRepository<TModel> where TModel : IModel
     {
-        IEnumerable<TModel> GetAll();
-        TModel GetById(int id);
-        void Add(TModel model);
-        void Update(TModel model);
-        void Delete(TModel model);
+        Task<IEnumerable<TModel>> GetAll();
+        Task<TModel> GetById(Guid id);
+        Task Add(TModel model);
+        Task Update(TModel model);
+        Task Delete(TModel model);
     }
 }
