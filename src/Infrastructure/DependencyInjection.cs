@@ -1,4 +1,7 @@
-﻿using Infrastructure.Data;
+﻿using Domain.Entities;
+using Infrastructure.Data;
+using Infrastructure.Repositories;
+using Infrastructure.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +18,9 @@ public static class DependencyInjection
                 b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
 
         services.AddScoped<DbMigrationService>();
+
+        services.AddScoped<IRepository<User>, UserRepository>();
+        services.AddScoped<IRepository<Contact>, ContactRepository>();
 
         return services;
     }
