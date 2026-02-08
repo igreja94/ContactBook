@@ -14,8 +14,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.Services.ApplyMigrations();
-
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();

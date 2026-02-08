@@ -17,18 +17,15 @@ public static class DependencyInjection
                 configuration.GetConnectionString("DefaultConnection"),
                 b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
 
-        services.AddScoped<DbMigrationService>();
+        using (var serviceProvider = services.BuildServiceProvider())
+        {
+            var dbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
+            dbContext.Database.Migrate();
+        }
 
         services.AddScoped<IRepository<User>, UserRepository>();
         services.AddScoped<IRepository<Contact>, ContactRepository>();
 
         return services;
-    }
-
-    public static void ApplyMigrations(this IServiceProvider serviceProvider)
-    {
-        using var scope = serviceProvider.CreateScope();
-        var migrationService = scope.ServiceProvider.GetRequiredService<DbMigrationService>();
-        migrationService.MigrateDatabase();
     }
 }
