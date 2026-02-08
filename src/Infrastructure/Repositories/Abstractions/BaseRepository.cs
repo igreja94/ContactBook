@@ -10,7 +10,18 @@ namespace Infrastructure.Repositories.Abstractions
         protected readonly ApplicationDbContext _context = context;
         protected readonly DbSet<TModel> _dbSet = context.Set<TModel>();
 
-        public virtual void Add(TModel model)
+        public virtual async Task<IEnumerable<TModel>> GetAll()
+        {
+            return [.. _dbSet];
+        }
+
+        public virtual async Task<TModel> GetById(Guid id)
+        {
+            return _dbSet.Find(id) ??
+                throw new KeyNotFoundException($"Entity of type {typeof(TModel).Name} with ID {id} was not found.");
+        }
+
+        public virtual async Task Add(TModel model)
         {
             ArgumentNullException.ThrowIfNull(model);
 
@@ -18,30 +29,19 @@ namespace Infrastructure.Repositories.Abstractions
             _context.SaveChanges();
         }
 
-        public virtual void Delete(TModel model)
-        {
-            ArgumentNullException.ThrowIfNull(model);
-
-            _dbSet.Remove(model);
-            _context.SaveChanges();
-        }
-
-        public virtual IEnumerable<TModel> GetAll()
-        {
-            return [.. _dbSet];
-        }
-
-        public virtual TModel GetById(Guid id)
-        {
-            return _dbSet.Find(id) ??
-                throw new KeyNotFoundException($"Entity of type {typeof(TModel).Name} with ID {id} was not found.");
-        }
-
-        public virtual void Update(TModel model)
+        public virtual async Task Update(TModel model)
         {
             ArgumentNullException.ThrowIfNull(model);
 
             _dbSet.Update(model);
+            _context.SaveChanges();
+        }
+
+        public virtual async Task Delete(TModel model)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+
+            _dbSet.Remove(model);
             _context.SaveChanges();
         }
     }
