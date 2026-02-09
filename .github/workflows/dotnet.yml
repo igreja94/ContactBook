@@ -2,10 +2,14 @@ name: .NET - Docker
 
 on:
   push:
-    branches: [ "main" ]  # Automatically triggers when pushing to main
+    branches: [ "main" ] 
   pull_request:
-    branches: [ "main" ]  # Triggered when opening a PR to main
-  workflow_dispatch:  # Allows manual triggering for PRs
+    branches: [ "main" ] 
+  workflow_dispatch: 
+    pr_number:
+      description: 'Pull Request Number'
+      required: true
+      type: string
 
 jobs:
   restore-build-test-dotnet:
