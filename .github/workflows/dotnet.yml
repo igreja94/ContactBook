@@ -55,22 +55,24 @@ jobs:
     - name: Get Latest Version Tag
       id: version_tag
       run: |
-        # Check if any tags exist
+        # Get the latest tag (with 'v' prefix, e.g., v0.0.x)
         latest_tag=$(git tag --list | sort -V | tail -n 1)
         
         if [[ -z "$latest_tag" ]]; then
-          # If no tag is found, default to 0.0.1
-          version="0.0.1"
+          # If no tag is found, default to v0.0.1
+          version="v0.0.1"
         else
-          # Extract the current version (assumes tags are in format v0.0.x)
-          current_version=$(echo $latest_tag | sed 's/v//')
-          major=$(echo $current_version | cut -d. -f1)
-          minor=$(echo $current_version | cut -d. -f2)
-          patch=$(echo $current_version | cut -d. -f3)
+          # Ensure the tag has the 'v' prefix
+          latest_tag=${latest_tag#v}
           
-          # Increment the patch version for PRs
+          # Split version components
+          major=$(echo $latest_tag | cut -d. -f1)
+          minor=$(echo $latest_tag | cut -d. -f2)
+          patch=$(echo $latest_tag | cut -d. -f3)
+          
+          # Increment the patch version for PRs or pushes
           patch=$((patch + 1))
-          version="${major}.${minor}.${patch}"
+          version="v${major}.${minor}.${patch}"
         fi
 
         echo "PR Versioning: Tagging with $version"
