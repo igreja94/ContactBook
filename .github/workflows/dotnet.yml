@@ -46,7 +46,7 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Extract metadata for Docker
+    - name: Extract metadata (tags, labels) for Docker
       id: meta
       uses: docker/metadata-action@v5
       with:
@@ -72,7 +72,7 @@ jobs:
           patch=$((patch + 1))
           version="${major}.${minor}.${patch}"
         fi
-        
+
         echo "PR Versioning: Tagging with $version"
         echo "::set-output name=tag::$version"
 
@@ -87,11 +87,19 @@ jobs:
           echo "::set-output name=tag::${{ steps.version_tag.outputs.tag }}"
         fi
 
+    - name: Convert repository name to lowercase
+      id: lowercase_repo
+      run: |
+        repo_name="${{ github.repository }}"
+        lowercase_repo_name=$(echo "$repo_name" | tr '[:upper:]' '[:lower:]')
+        echo "Repository name in lowercase: $lowercase_repo_name"
+        echo "::set-output name=repo::$lowercase_repo_name"
+
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
         context: ./src
         file: ./src/API/Dockerfile
         push: true
-        tags: ghcr.io/${{ github.repository }}:${{ steps.final_version_tag.outputs.tag }}
+        tags: ghcr.io/${{ steps.lowercase_repo.outputs.repo }}:${{ steps.final_version_tag.outputs.tag }}
         labels: ${{ steps.meta.outputs.labels }}
