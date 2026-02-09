@@ -1,4 +1,4 @@
-name: .NET Docker Build
+name: .NET Docker Build (Manual)
 
 on:
   workflow_dispatch:
