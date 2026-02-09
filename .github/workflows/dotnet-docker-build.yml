@@ -1,4 +1,4 @@
-name: .NET - Docker
+name: .NET Docker Build
 
 on:
   push:
