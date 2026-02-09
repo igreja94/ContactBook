@@ -2,9 +2,10 @@ name: .NET - Docker
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" ]  # Automatically triggers when pushing to main
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main" ]  # Triggered when opening a PR to main
+  workflow_dispatch:  # Allows manual triggering for PRs
 
 jobs:
   restore-build-test-dotnet:
@@ -29,6 +30,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    if: |
+      github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.pull_request != null)
 
     steps:
     - uses: actions/checkout@v4
@@ -72,5 +75,4 @@ jobs:
         context: ./src
         file: ./src/API/Dockerfile
         push: true
-        # Use the lowercase repository name for the tag
         tags: ghcr.io/${{ steps.lowercase_repo.outputs.repo }}:${{ steps.image_tag.outputs.tag }}
