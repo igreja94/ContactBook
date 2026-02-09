@@ -37,7 +37,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        ref: ${{ github.head_ref }}  # Checkout PR branch if it's a PR
+        ref: ${{ github.head_ref }}
 
     - name: Log in to GitHub Container Registry
       uses: docker/login-action@v3
