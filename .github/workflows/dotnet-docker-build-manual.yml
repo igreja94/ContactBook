@@ -47,10 +47,17 @@ jobs:
         echo "Repository name in lowercase: $lowercase_repo_name"
         echo "::set-output name=repo::$lowercase_repo_name"
 
+    - name: Set commit SHA tag
+      id: commit_tag
+      run: |
+        SHORT_SHA=${GITHUB_SHA:0:7}  # Extract the first 7 characters of the commit SHA
+        echo "Commit short SHA: $SHORT_SHA"
+        echo "::set-output name=tag::$SHORT_SHA"
+
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
         context: ./src
         file: ./src/API/Dockerfile
         push: true
-        tags: ghcr.io/${{ steps.lowercase_repo.outputs.repo }}:${{ github.sha }}
+        tags: ghcr.io/${{ steps.lowercase_repo.outputs.repo }}:${{ steps.commit_tag.outputs.tag }}
