@@ -23,7 +23,6 @@ jobs:
     - name: Test
       run: dotnet test ./src/ContactBook.slnx --no-build --verbosity normal
 
-  jobs:
     build-publish-docker:
       needs: restore-build-test-dotnet
       runs-on: ubuntu-latest
