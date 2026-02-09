@@ -42,6 +42,14 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
+    - name: Convert repository name to lowercase
+      id: lowercase_repo
+      run: |
+        repo_name="${{ github.repository }}"
+        lowercase_repo_name=$(echo "$repo_name" | tr '[:upper:]' '[:lower:]')
+        echo "Repository name in lowercase: $lowercase_repo_name"
+        echo "::set-output name=repo::$lowercase_repo_name"
+
     - name: Determine Image Tag
       id: image_tag
       run: |
@@ -64,4 +72,5 @@ jobs:
         context: ./src
         file: ./src/API/Dockerfile
         push: true
-        tags: ghcr.io/${{ github.repository }}:${{ steps.image_tag.outputs.tag }}
+        # Use the lowercase repository name for the tag
+        tags: ghcr.io/${{ steps.lowercase_repo.outputs.repo }}:${{ steps.image_tag.outputs.tag }}
