@@ -52,26 +52,10 @@ jobs:
         echo "Repository name in lowercase: $lowercase_repo_name"
         echo "::set-output name=repo::$lowercase_repo_name"
 
-    - name: Determine Image Tag
-      id: image_tag
-      run: |
-        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-          # For PRs, use pr-<pr_number>
-          echo "Using PR number as tag"
-          echo "::set-output name=tag::pr-${{ github.event.pull_request.number }}"
-        elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-          # For pushes to main, use latest as tag
-          echo "Using 'latest' as tag"
-          echo "::set-output name=tag::latest"
-        else
-          echo "No matching condition"
-          exit 1
-        fi
-
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
         context: ./src
         file: ./src/API/Dockerfile
         push: true
-        tags: ghcr.io/${{ steps.lowercase_repo.outputs.repo }}:${{ steps.image_tag.outputs.tag }}
+        tags: ghcr.io/${{ steps.lowercase_repo.outputs.repo }}:latest
