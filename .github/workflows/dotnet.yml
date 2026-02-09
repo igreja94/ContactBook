@@ -23,14 +23,14 @@ jobs:
     - name: Test
       run: dotnet test ./src/ContactBook.slnx --no-build --verbosity normal
 
+  jobs:
   build-publish-docker:
     needs: restore-build-test-dotnet
-    if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    
+
     steps:
     - uses: actions/checkout@v4
       with:
@@ -43,56 +43,21 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Extract metadata (tags, labels) for Docker
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ghcr.io/${{ github.repository }}
-
-    - name: Get Latest Version Tag
-      id: version_tag
+    - name: Determine Image Tag
+      id: image_tag
       run: |
-        # Get the latest tag (with 'v' prefix, e.g., v0.0.x)
-        latest_tag=$(git tag --list | sort -V | tail -n 1)
-        
-        if [[ -z "$latest_tag" ]]; then
-          # If no tag is found, default to v0.0.1
-          version="v0.0.1"
-        else
-          # Ensure the tag has the 'v' prefix
-          latest_tag=${latest_tag#v}
-          
-          # Split version components
-          major=$(echo $latest_tag | cut -d. -f1)
-          minor=$(echo $latest_tag | cut -d. -f2)
-          patch=$(echo $latest_tag | cut -d. -f3)
-          
-          # Increment the patch version for PRs or pushes
-          patch=$((patch + 1))
-          version="v${major}.${minor}.${patch}"
-        fi
-
-        echo "PR Versioning: Tagging with $version"
-        echo "::set-output name=tag::$version"
-
-    - name: Determine final version tag
-      id: final_version_tag
-      run: |
-        if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
-          echo "Main merge detected: Tagging with latest"
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          # For PRs, use pr-<pr_number>
+          echo "Using PR number as tag"
+          echo "::set-output name=tag::pr-${{ github.event.pull_request.number }}"
+        elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          # For pushes to main, use latest as tag
+          echo "Using 'latest' as tag"
           echo "::set-output name=tag::latest"
         else
-          echo "Using PR version tag"
-          echo "::set-output name=tag::${{ steps.version_tag.outputs.tag }}"
+          echo "No matching condition"
+          exit 1
         fi
-
-    - name: Convert repository name to lowercase
-      id: lowercase_repo
-      run: |
-        repo_name="${{ github.repository }}"
-        lowercase_repo_name=$(echo "$repo_name" | tr '[:upper:]' '[:lower:]')
-        echo "Repository name in lowercase: $lowercase_repo_name"
-        echo "::set-output name=repo::$lowercase_repo_name"
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
@@ -100,5 +65,4 @@ jobs:
         context: ./src
         file: ./src/API/Dockerfile
         push: true
-        tags: ghcr.io/${{ steps.lowercase_repo.outputs.repo }}:${{ steps.final_version_tag.outputs.tag }}
-        labels: ${{ steps.meta.outputs.labels }}
+        tags: ghcr.io/${{ github.repository }}:${{ steps.image_tag.outputs.tag }}
