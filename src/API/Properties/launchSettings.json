@@ -21,7 +21,8 @@
         "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
         "environmentVariables": {
             "ASPNETCORE_HTTPS_PORTS": "8081",
-            "ASPNETCORE_HTTP_PORTS": "8080"
+            "ASPNETCORE_HTTP_PORTS": "8080",
+            "ConnectionStrings__DefaultConnection": "Server=host.docker.internal,1433;Database=ContactBookDb;User Id=sa;Password=!!MyPassword1234;TrustServerCertificate=True"
         },
         "publishAllPorts": true,
         "useSSL": true
