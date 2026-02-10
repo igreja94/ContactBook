@@ -36,9 +36,9 @@ namespace Infrastructure.Configurations
             builder.Property(p => p.PhoneNumber)
                 .HasMaxLength(15);
 
-            builder.HasMany(u => u.Contacts)
-               .WithOne(c => c.User)
-               .HasForeignKey(c => c.UserId);
+            builder.HasMany<Contact>()
+              .WithOne(c => c.User)
+              .HasForeignKey(c => c.UserId);
         }
     }
 }

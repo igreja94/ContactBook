@@ -10,39 +10,38 @@ namespace Infrastructure.Repositories.Abstractions
         protected readonly ApplicationDbContext Context = context;
         protected readonly DbSet<TModel> DbSet = context.Set<TModel>();
 
-        public virtual async Task<IEnumerable<TModel>> GetAll()
+        public async Task<IEnumerable<TModel>> GetAllAsync()
         {
-            return [.. DbSet];
+            return await DbSet.ToListAsync();
         }
 
-        public virtual async Task<TModel> GetById(Guid id)
+        public async ValueTask<TModel> GetByIdAsync(Guid id)
         {
-            return DbSet.Find(id) ??
-                throw new KeyNotFoundException($"Entity of type {typeof(TModel).Name} with ID {id} was not found.");
+            return await DbSet.FindAsync(id) ?? throw new InvalidOperationException($"{typeof(TModel).Name} with id {id} not found.");
         }
 
-        public virtual async Task Add(TModel model)
+        public async Task AddAsync(TModel model)
         {
             ArgumentNullException.ThrowIfNull(model);
 
-            DbSet.Add(model);
-            Context.SaveChanges();
+            await DbSet.AddAsync(model);
+            await Context.SaveChangesAsync();
         }
 
-        public virtual async Task Update(TModel model)
+        public async Task UpdateAsync(TModel model)
         {
             ArgumentNullException.ThrowIfNull(model);
 
             DbSet.Update(model);
-            Context.SaveChanges();
+            await Context.SaveChangesAsync();
         }
 
-        public virtual async Task Delete(TModel model)
+        public virtual async Task DeleteAsync(TModel model)
         {
             ArgumentNullException.ThrowIfNull(model);
 
             DbSet.Remove(model);
-            Context.SaveChanges();
+            await Context.SaveChangesAsync();
         }
     }
 }

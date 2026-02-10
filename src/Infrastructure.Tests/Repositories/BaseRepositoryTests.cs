@@ -24,20 +24,20 @@ namespace Infrastructure.Tests.Repositories
         }
 
         [Fact]
-        public async Task GetAll_ShouldReturnAllEntities()
+        public async Task GetAllAsync_ShouldReturnAllEntities()
         {
             //Arrange
             var repo = new TestableBaseRepository(Context.Context);
 
             //Act
-            var entities = await repo.GetAll();
+            var entities = await repo.GetAllAsync();
 
             //Assert
             Assert.Equal(5, entities.Count());
         }
 
         [Fact]
-        public async Task GetAll_ShouldReturnEmptyCollection_WhenNoEntities()
+        public async Task GetAllAsync_ShouldReturnEmptyCollection_WhenNoEntities()
         {
             //Arrange
             var repo = new TestableBaseRepository(Context.Context);
@@ -45,20 +45,20 @@ namespace Infrastructure.Tests.Repositories
             Context.Context.SaveChanges();
 
             //Act
-            var entities = await repo.GetAll();
+            var entities = await repo.GetAllAsync();
             //Assert
             Assert.Empty(entities);
         }
 
         [Fact]
-        public async Task GetById_ShouldReturnCorrectEntity()
+        public async Task GetByIdAsync_ShouldReturnCorrectEntity()
         {
             //Arrange
             var repo = new TestableBaseRepository(Context.Context);
             var existingUser = Context.Context.Users.First();
 
             //Act
-            var entity = await repo.GetById(existingUser.Id);
+            var entity = await repo.GetByIdAsync(existingUser.Id);
 
             //Assert
             Assert.NotNull(entity);
@@ -66,18 +66,18 @@ namespace Infrastructure.Tests.Repositories
         }
 
         [Fact]
-        public async Task GetById_ShouldThrowException_WhenEntityNotFound()
+        public async Task GetByIdAsync_ShouldThrowException_WhenEntityNotFound()
         {
             //Arrange
             var repo = new TestableBaseRepository(Context.Context);
             var nonExistentId = Guid.NewGuid();
 
             //Act & Assert
-            await Assert.ThrowsAsync<KeyNotFoundException>(() => repo.GetById(nonExistentId));
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await repo.GetByIdAsync(nonExistentId));
         }
 
         [Fact]
-        public async Task Add_ShouldAddEntity()
+        public async Task AddAsync_ShouldAddEntity()
         {
             //Arrange
             var repo = new TestableBaseRepository(Context.Context);
@@ -85,8 +85,8 @@ namespace Infrastructure.Tests.Repositories
             Guid newUserId = newUser.Id;
 
             //Act
-            await repo.Add(newUser);
-            var addedUser = await repo.GetById(newUserId);
+            await repo.AddAsync(newUser);
+            var addedUser = await repo.GetByIdAsync(newUserId);
 
             //Assert
             Assert.NotNull(addedUser);
@@ -94,17 +94,17 @@ namespace Infrastructure.Tests.Repositories
         }
 
         [Fact]
-        public async Task Add_ShouldThrowException_WhenModelIsNull()
+        public async Task AddAsync_ShouldThrowException_WhenModelIsNull()
         {
             //Arrange
             var repo = new TestableBaseRepository(Context.Context);
 
             //Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => repo.Add(null!));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await repo.AddAsync(null!));
         }
 
         [Fact]
-        public async Task Update_ShouldUpdateEntity()
+        public async Task UpdateAsync_ShouldUpdateEntity()
         {
             //Arrange
             var repo = new TestableBaseRepository(Context.Context);
@@ -112,8 +112,8 @@ namespace Infrastructure.Tests.Repositories
             existingUser.FirstName = "UpdatedName";
 
             //Act
-            await repo.Update(existingUser);
-            var updatedUser = await repo.GetById(existingUser.Id);
+            await repo.UpdateAsync(existingUser);
+            var updatedUser = await repo.GetByIdAsync(existingUser.Id);
 
             //Assert
             Assert.NotNull(updatedUser);
@@ -121,37 +121,37 @@ namespace Infrastructure.Tests.Repositories
         }
 
         [Fact]
-        public async Task Update_ShouldThrowException_WhenModelIsNull()
+        public async Task UpdateAsync_ShouldThrowException_WhenModelIsNull()
         {
             //Arrange
             var repo = new TestableBaseRepository(Context.Context);
 
             //Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => repo.Update(null!));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await repo.UpdateAsync(null!));
         }
 
         [Fact]
-        public async Task Delete_ShouldRemoveEntity()
+        public async Task DeleteAsync_ShouldRemoveEntity()
         {
             //Arrange
             var repo = new TestableBaseRepository(Context.Context);
             var existingUser = Context.Context.Users.First();
 
             //Act
-            await repo.Delete(existingUser);
+            await repo.DeleteAsync(existingUser);
 
             //Assert
-            await Assert.ThrowsAsync<KeyNotFoundException>(() => repo.GetById(existingUser.Id));
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await repo.GetByIdAsync(existingUser.Id));
         }
 
         [Fact]
-        public async Task Delete_ShouldThrowException_WhenModelIsNull()
+        public async Task DeleteAsync_ShouldThrowException_WhenModelIsNull()
         {
             //Arrange
             var repo = new TestableBaseRepository(Context.Context);
 
             //Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => repo.Delete(null!));
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await repo.DeleteAsync(null!));
         }
     }
 }

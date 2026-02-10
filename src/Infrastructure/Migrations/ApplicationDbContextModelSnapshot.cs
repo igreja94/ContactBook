@@ -106,17 +106,12 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.Contact", b =>
                 {
                     b.HasOne("Domain.Entities.User", "User")
-                        .WithMany("Contacts")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Domain.Entities.User", b =>
-                {
-                    b.Navigation("Contacts");
                 });
 #pragma warning restore 612, 618
         }
