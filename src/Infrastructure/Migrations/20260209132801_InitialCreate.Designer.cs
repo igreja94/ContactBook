@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260208001955_InitialCreate")]
+    [Migration("20260209132801_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -109,17 +109,12 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.Contact", b =>
                 {
                     b.HasOne("Domain.Entities.User", "User")
-                        .WithMany("Contacts")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Domain.Entities.User", b =>
-                {
-                    b.Navigation("Contacts");
                 });
 #pragma warning restore 612, 618
         }

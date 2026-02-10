@@ -13,6 +13,5 @@ namespace Domain.Entities
         public DateTime DateOfBirth { get; set; } = DateTime.MinValue;
         public string Email { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;
-        public ICollection<Contact> Contacts { get; set; } = [];
     }
 }

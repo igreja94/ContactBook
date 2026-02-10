@@ -44,6 +44,8 @@ namespace Infrastructure.Tests
                     PhoneNumber = $"+000000000{i}",
                 };
 
+                Context.Users.Add(user);
+
                 var contacts = Enumerable.Range(1, 5).Select(j => new Contact
                 {
                     FirstName = $"FirstName{j}",
@@ -55,10 +57,8 @@ namespace Infrastructure.Tests
 
                 foreach (var contact in contacts)
                 {
-                    user.Contacts.Add(contact);
+                    Context.Contacts.Add(contact);
                 }
-
-                Context.Users.Add(user);
             }
 
             Context.SaveChanges();
