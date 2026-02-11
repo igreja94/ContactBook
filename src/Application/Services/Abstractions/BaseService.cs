@@ -5,33 +5,46 @@ using Infrastructure.Repositories.Interfaces;
 
 namespace Application.Services.Abstractions
 {
-    public abstract class BaseService<TDto>(IRepository<IModel> repository) : IService<TDto> where TDto : IDto
+    public abstract class BaseService<TModel, TDto>(IRepository<TModel> repository) : IService<TDto>
+        where TModel : IModel
+        where TDto : IDto
     {
-        public IRepository<IModel> Repository { get; set; } = repository;
 
-        public virtual void Create(TDto dto)
+        protected abstract TDto MapToDto(TModel model);
+
+        protected abstract TModel ToModel(TDto dto);
+
+        public virtual async Task<IEnumerable<TDto>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            var models = await repository.GetAllAsync();
+            return models.Select(e => MapToDto(e));
         }
 
-        public virtual void Delete(int id)
+        public virtual async Task<TDto> GetByIdAsync(string id)
         {
-            throw new NotImplementedException();
+            var guid = Guid.Parse(id);
+            var model = await repository.GetByIdAsync(guid);
+            return MapToDto(model);
         }
 
-        public virtual IEnumerable<TDto> GetAll()
+        public virtual async Task AddAsync(TDto dto)
         {
-            throw new NotImplementedException();
+            var model = ToModel(dto);
+            await repository.AddAsync(model);
         }
 
-        public virtual TDto GetById(int id)
+        public virtual async Task UpdateAsync(TDto dto)
         {
-            throw new NotImplementedException();
+            var model = ToModel(dto);
+            await repository.UpdateAsync(model);
         }
 
-        public virtual void Update(TDto dto)
+        public virtual async Task DeleteAsync(string id)
         {
-            throw new NotImplementedException();
+            var guid = Guid.Parse(id);
+            var model = await repository.GetByIdAsync(guid);
+            await repository.DeleteAsync(model);
         }
+
     }
 }

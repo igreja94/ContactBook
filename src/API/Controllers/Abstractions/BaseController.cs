@@ -7,7 +7,8 @@ namespace WebApi.Controllers.Abstractions
 {
     [ApiController]
     [Route("api/[controller]")]
-    public abstract class BaseController<TDto>(IService<TDto> service) : Controller, IController<TDto> where TDto : IDto
+    public abstract class BaseController<TDto>(IService<TDto> service) : Controller, IController<TDto>
+        where TDto : IDto
     {
         protected readonly IService<TDto> _service = service;
 

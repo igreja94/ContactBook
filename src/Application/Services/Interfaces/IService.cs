@@ -2,12 +2,13 @@
 
 namespace Application.Services.Interfaces
 {
-    public interface IService<TDto> where TDto : IDto
+    public interface IService<TDto>
+        where TDto : IDto
     {
-        IEnumerable<TDto> GetAll();
-        TDto GetById(int id);
-        void Create(TDto dto);
-        void Update(TDto dto);
-        void Delete(int id);
+        Task<IEnumerable<TDto>> GetAllAsync();
+        Task<TDto> GetByIdAsync(string id);
+        Task AddAsync(TDto dto);
+        Task UpdateAsync(TDto dto);
+        Task DeleteAsync(string id);
     }
 }
