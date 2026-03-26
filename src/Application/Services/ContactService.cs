@@ -7,30 +7,30 @@ using Infrastructure.Repositories.Interfaces;
 
 namespace Application.Services
 {
-    public class ContactService(IContactRepository repository) : BaseService<Contact, ContactDto>(repository), IContactService
-    {
-        protected override ContactDto MapToDto(Contact model)
-        {
-            return model.ToDto();
-        }
+	public class ContactService(IContactRepository repository) : BaseService<Contact, ContactDto>(repository), IContactService
+	{
+		protected override ContactDto MapToDto(Contact model)
+		{
+			return model.ToDto();
+		}
 
-        protected override Contact ToModel(ContactDto dto)
-        {
-            return dto.ToModel();
-        }
+		protected override Contact ToModel(ContactDto dto)
+		{
+			return dto.ToModel();
+		}
 
-        public async Task<IEnumerable<ContactDto>> GetContactsByUserId(string id)
-        {
-            var guid = Guid.Parse(id);
-            var contacts = await repository.GetContactsByUserAsync(guid);
-            return contacts.Select(c => c.ToDto());
-        }
+		public async Task<IEnumerable<ContactDto>> GetContactsByUserId(string id)
+		{
+			var guid = Guid.Parse(id);
+			var contacts = await repository.GetContactsByUserAsync(guid);
+			return contacts.Select(c => c.ToDto());
+		}
 
-        public Task DeleteContactsByUserAsync(string userId, ICollection<string> contactIds)
-        {
-            throw new NotImplementedException();
-        }
+		public Task DeleteContactsByUserAsync(string userId, ICollection<string> contactIds)
+		{
+			throw new NotImplementedException();
+		}
 
 
-    }
+	}
 }
