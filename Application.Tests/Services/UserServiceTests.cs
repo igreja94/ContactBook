@@ -6,7 +6,7 @@ using Moq;
 
 namespace Application.Tests.Services
 {
-	public class BaseServiceTests : IAsyncLifetime
+	public class UserServiceTests : IAsyncLifetime
 	{
 		private readonly Mock<IRepository<User>> MockUserRepo = new();
 		private readonly UserService _service;
@@ -37,7 +37,7 @@ namespace Application.Tests.Services
 			return Task.CompletedTask;
 		}
 
-		public BaseServiceTests()
+		public UserServiceTests()
 		{
 			_service = new UserService(MockUserRepo.Object);
 		}
