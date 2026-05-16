@@ -1,5 +1,5 @@
 <Solution>
-  <Project Path="../Application.Tests/Application.Tests.csproj" Id="5d423667-422b-4b0f-831e-29490a703380" />
+  <Project Path="Application.Tests/Application.Tests.csproj" Id="5d423667-422b-4b0f-831e-29490a703380" />
   <Project Path="API/API.csproj" />
   <Project Path="Application/Application.csproj" />
   <Project Path="docker-compose.dcproj">

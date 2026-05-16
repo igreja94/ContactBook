@@ -22,6 +22,7 @@ namespace Application.Extensions
         {
             return new Contact
             {
+                Id = string.IsNullOrEmpty(contactDto.Id) ? Guid.NewGuid() : Guid.Parse(contactDto.Id),
                 FirstName = contactDto.FirstName ?? string.Empty,
                 LastName = contactDto.LastName ?? string.Empty,
                 DateOfBirth = contactDto.DateOfBirth ?? DateTime.MinValue,
