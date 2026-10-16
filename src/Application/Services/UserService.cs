@@ -2,11 +2,11 @@
 using Application.Extensions;
 using Application.Services.Abstractions;
 using Domain.Entities;
-using Infrastructure.Repositories.Interfaces;
+using Application.Repositories;
 
 namespace Application.Services
 {
-    public class UserService(IRepository<User> repository) : BaseService<User, UserDto>(repository)
+    public class UserService(IUserRepository repository) : BaseService<User, UserDto>(repository)
     {
         protected override UserDto MapToDto(User model)
         {

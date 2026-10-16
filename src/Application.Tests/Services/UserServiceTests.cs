@@ -1,14 +1,14 @@
 ﻿using Application.DTO;
 using Application.Services;
 using Domain.Entities;
-using Infrastructure.Repositories.Interfaces;
+using Application.Repositories;
 using Moq;
 
 namespace Application.Tests.Services
 {
 	public class UserServiceTests : IAsyncLifetime
 	{
-		private readonly Mock<IRepository<User>> MockUserRepo = new();
+		private readonly Mock<IUserRepository> MockUserRepo = new();
 		private readonly UserService _service;
 
 		// Sample data

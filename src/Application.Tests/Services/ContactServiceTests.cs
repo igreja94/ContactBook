@@ -1,7 +1,7 @@
 using Application.DTO;
 using Application.Services;
 using Domain.Entities;
-using Infrastructure.Repositories.Interfaces;
+using Application.Repositories;
 using Moq;
 
 namespace Application.Tests.Services

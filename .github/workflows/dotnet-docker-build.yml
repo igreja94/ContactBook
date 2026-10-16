@@ -56,6 +56,6 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         context: ./src
-        file: ./src/API/Dockerfile
+        file: ./src/Webhost/Dockerfile
         push: true
         tags: ghcr.io/${{ steps.lowercase_repo.outputs.repo }}:latest

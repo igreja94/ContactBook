@@ -1,7 +1,7 @@
 ﻿using Application.DTO.Interfaces;
 using Application.Services.Interfaces;
 using Domain.Entities.Interfaces;
-using Infrastructure.Repositories.Interfaces;
+using Application.Repositories;
 
 namespace Application.Services.Abstractions
 {

@@ -9,13 +9,13 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Applicatio
 {
     public ApplicationDbContext CreateDbContext(string[] args)
     {
-        // Adjust path to look into the API project for appsettings.json
-        string path = Path.Combine(Directory.GetCurrentDirectory(), "API");
+        // Adjust path to look into the Webhost project for appsettings.json
+        string path = Path.Combine(Directory.GetCurrentDirectory(), "Webhost");
 
         // If running from inside the src folder, the path might need adjusting
         if (!Directory.Exists(path))
         {
-            path = Path.Combine(Directory.GetCurrentDirectory(), "../API");
+            path = Path.Combine(Directory.GetCurrentDirectory(), "../Webhost");
         }
 
         IConfigurationRoot configuration = new ConfigurationBuilder()

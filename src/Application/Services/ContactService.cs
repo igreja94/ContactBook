@@ -3,7 +3,7 @@ using Application.Extensions;
 using Application.Services.Abstractions;
 using Application.Services.Interfaces;
 using Domain.Entities;
-using Infrastructure.Repositories.Interfaces;
+using Application.Repositories;
 
 namespace Application.Services
 {
