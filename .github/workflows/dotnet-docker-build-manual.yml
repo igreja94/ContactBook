@@ -2,6 +2,11 @@ name: .NET Docker Build (Manual)
 
 on:
   workflow_dispatch:
+    inputs:
+      publish_docker:
+        description: Build and publish the Docker image
+        type: boolean
+        default: false
 
 jobs:
   restore-build-test-dotnet:
@@ -22,6 +27,7 @@ jobs:
 
   build-publish-docker:
     needs: restore-build-test-dotnet
+    if: ${{ inputs.publish_docker }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
