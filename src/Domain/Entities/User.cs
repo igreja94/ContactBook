@@ -1,5 +1,4 @@
-﻿using Domain.Entities.Interfaces;
-using Domain.Enums;
+using Domain.Entities.Interfaces;
 
 namespace Domain.Entities
 {
@@ -7,7 +6,6 @@ namespace Domain.Entities
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public string PasswordHash { get; set; } = string.Empty;
-        public Role Role { get; set; } = Role.USER;
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public DateTime DateOfBirth { get; set; } = DateTime.MinValue;

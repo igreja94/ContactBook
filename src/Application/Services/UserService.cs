@@ -17,5 +17,14 @@ namespace Application.Services
         {
             return dto.ToModel();
         }
+
+        protected override void ApplyUpdate(User model, UserDto dto)
+        {
+            model.FirstName = dto.FirstName ?? string.Empty;
+            model.LastName = dto.LastName ?? string.Empty;
+            model.DateOfBirth = dto.DateOfBirth ?? DateTime.MinValue;
+            model.Email = dto.Email ?? string.Empty;
+            model.PhoneNumber = dto.PhoneNumber ?? string.Empty;
+        }
     }
 }

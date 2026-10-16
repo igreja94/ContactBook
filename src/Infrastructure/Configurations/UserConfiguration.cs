@@ -16,9 +16,6 @@ namespace Infrastructure.Configurations
                 .IsRequired()
                 .HasMaxLength(500);
 
-            builder.Property(u => u.Role)
-                .IsRequired();
-
             builder.Property(p => p.FirstName)
                .IsRequired()
                .HasMaxLength(100);

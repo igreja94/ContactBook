@@ -4,8 +4,8 @@ namespace Application.Services.Interfaces
 {
     public interface IContactService : IService<ContactDto>
     {
-        Task<IEnumerable<ContactDto>> GetContactsByUserId(string id);
+        Task<IEnumerable<ContactDto>> GetContactsByUserId(Guid id);
 
-        Task DeleteContactsByUserAsync(string userId, ICollection<string> contactIds);
+        Task DeleteContactsByUserAsync(Guid userId, ICollection<Guid> contactIds);
     }
 }

@@ -1,4 +1,4 @@
-using Application.DTO;
+﻿using Application.DTO;
 using Application.Services;
 using Domain.Entities;
 using Application.Repositories;
@@ -57,7 +57,7 @@ namespace Application.Tests.Services
 			Assert.Equal(Contacts.Count, result.Count());
 			foreach (var contact in Contacts)
 			{
-				Assert.Contains(result, r => r.Id == contact.Id.ToString() && r.FirstName == contact.FirstName && r.LastName == contact.LastName);
+				Assert.Contains(result, r => r.Id == contact.Id && r.FirstName == contact.FirstName && r.LastName == contact.LastName);
 			}
 		}
 
@@ -67,10 +67,10 @@ namespace Application.Tests.Services
 			// Arrange
 			var targetContact = Contacts.First();
 			// Act
-			var result = await _service.GetByIdAsync(targetContact.Id.ToString());
+			var result = await _service.GetByIdAsync(targetContact.Id);
 			// Assert
 			Assert.NotNull(result);
-			Assert.Equal(targetContact.Id.ToString(), result.Id);
+			Assert.Equal(targetContact.Id, result.Id);
 			Assert.Equal(targetContact.FirstName, result.FirstName);
 			Assert.Equal(targetContact.LastName, result.LastName);
 		}
@@ -79,8 +79,8 @@ namespace Application.Tests.Services
 		public async Task GetByIdAsync_ShouldThrow_WhenContactNotFound()
 		{
 			// Arrange
-			var nonExistentId = Guid.NewGuid().ToString();
-			MockContactRepo.Setup(r => r.GetByIdAsync(Guid.Parse(nonExistentId)))
+			var nonExistentId = Guid.NewGuid();
+			MockContactRepo.Setup(r => r.GetByIdAsync(nonExistentId))
 				.ThrowsAsync(new InvalidOperationException("Sequence contains no matching element"));
 
 			// Act & Assert
@@ -93,7 +93,7 @@ namespace Application.Tests.Services
 			// Arrange
 			var newContactDto = new ContactDto
 			{
-				Id = Guid.NewGuid().ToString(),
+				Id = Guid.NewGuid(),
 				FirstName = "New",
 				LastName = "Contact",
 				DateOfBirth = DateTime.MinValue,
@@ -101,10 +101,13 @@ namespace Application.Tests.Services
 				PhoneNumber = "999999"
 			};
 			// Act
-			await _service.AddAsync(newContactDto);
+			var result = await _service.AddAsync(newContactDto);
 			// Assert
+			Assert.NotEqual(newContactDto.Id, result.Id);
+			Assert.NotEqual(Guid.Empty, result.Id!.Value);
+			Assert.Equal(newContactDto.FirstName, result.FirstName);
 			MockContactRepo.Verify(r => r.AddAsync(It.IsAny<Contact>()), Times.Once);
-			MockContactRepo.Verify(r => r.AddAsync(It.Is<Contact>(c => c.Id == Guid.Parse(newContactDto.Id))), Times.Once);
+			MockContactRepo.Verify(r => r.AddAsync(It.Is<Contact>(c => c.Id == result.Id!.Value)), Times.Once);
 			MockContactRepo.Verify(r => r.AddAsync(It.Is<Contact>(c => c.FirstName == newContactDto.FirstName)), Times.Once);
 		}
 
@@ -115,7 +118,7 @@ namespace Application.Tests.Services
 			var existingContact = Contacts.First();
 			var updatedContactDto = new ContactDto
 			{
-				Id = existingContact.Id.ToString(),
+				Id = existingContact.Id,
 				FirstName = "Updated",
 				LastName = existingContact.LastName,
 				DateOfBirth = existingContact.DateOfBirth,
@@ -126,7 +129,7 @@ namespace Application.Tests.Services
 			await _service.UpdateAsync(updatedContactDto);
 			// Assert
 			MockContactRepo.Verify(r => r.UpdateAsync(It.IsAny<Contact>()), Times.Once);
-			MockContactRepo.Verify(r => r.UpdateAsync(It.Is<Contact>(c => c.Id == Guid.Parse(updatedContactDto.Id) && c.FirstName == updatedContactDto.FirstName)), Times.Once);
+			MockContactRepo.Verify(r => r.UpdateAsync(It.Is<Contact>(c => c.Id == updatedContactDto.Id && c.FirstName == updatedContactDto.FirstName)), Times.Once);
 
 		}
 
@@ -136,7 +139,7 @@ namespace Application.Tests.Services
 			// Arrange
 			var existingContact = Contacts.First();
 			// Act
-			await _service.DeleteAsync(existingContact.Id.ToString());
+			await _service.DeleteAsync(existingContact.Id);
 			// Assert
 			MockContactRepo.Verify(r => r.DeleteAsync(It.IsAny<Contact>()), Times.Once);
 			MockContactRepo.Verify(r => r.DeleteAsync(It.Is<Contact>(c => c.Id == existingContact.Id)), Times.Once);
@@ -144,10 +147,40 @@ namespace Application.Tests.Services
 		}
 
 		[Fact]
+		public async Task UpdateAsync_ShouldPreserveOwner()
+		{
+			// Arrange
+			var existingContact = Contacts.First();
+			var ownerId = existingContact.UserId;
+			var dto = new ContactDto
+			{
+				Id = existingContact.Id,
+				FirstName = "Updated",
+				LastName = existingContact.LastName,
+				DateOfBirth = existingContact.DateOfBirth,
+				UserId = Guid.NewGuid()
+			};
+			// Act
+			await _service.UpdateAsync(dto);
+			// Assert
+			MockContactRepo.Verify(r => r.UpdateAsync(It.Is<Contact>(c => c.UserId == ownerId)), Times.Once);
+		}
+
+		[Fact]
+		public async Task DeleteContactsByUserAsync_ShouldDelegateToRepository()
+		{
+			// Arrange
+			var contactIds = Contacts.Select(c => c.Id).ToList();
+			// Act
+			await _service.DeleteContactsByUserAsync(UserId1, contactIds);
+			// Assert
+			MockContactRepo.Verify(r => r.DeleteContactsByUserAsync(UserId1, It.Is<ICollection<Guid>>(ids => ids.SequenceEqual(contactIds))), Times.Once);
+		}
+
+		[Fact]
 		public async Task GetContactsByUserId_ShouldReturnContactsForUser()
 		{
 			// Arrange
-			var userId = UserId1.ToString();
 			var userGuid = UserId1;
 			var userContacts = new List<Contact>
 			{
@@ -159,13 +192,13 @@ namespace Application.Tests.Services
 				.ReturnsAsync(userContacts);
 
 			// Act
-			var result = await _service.GetContactsByUserId(userId);
+			var result = await _service.GetContactsByUserId(userGuid);
 
 			// Assert
 			Assert.Equal(userContacts.Count, result.Count());
 			foreach (var contact in userContacts)
 			{
-				Assert.Contains(result, r => r.Id == contact.Id.ToString() && r.FirstName == contact.FirstName && r.LastName == contact.LastName);
+				Assert.Contains(result, r => r.Id == contact.Id && r.FirstName == contact.FirstName && r.LastName == contact.LastName);
 			}
 		}
 
