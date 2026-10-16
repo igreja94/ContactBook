@@ -1,6 +1,7 @@
 using Application;
 using Infrastructure;
 using Infrastructure.Data;
+using ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,10 +17,10 @@ await app.Services.MigrateDatabaseAsync();
 
 if (app.Environment.IsDevelopment())
 {
-	app.MapOpenApi();
-	app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "ContactBook API v1"));
-	app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
-	await app.Services.SeedDatabaseAsync();
+    app.MapOpenApi();
+    app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "ContactBook API v1"));
+    app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
+    await app.Services.SeedDatabaseAsync();
 }
 
 app.MapDefaultEndpoints();

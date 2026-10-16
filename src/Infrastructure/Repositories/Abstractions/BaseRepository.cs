@@ -1,47 +1,49 @@
-﻿using Domain.Entities.Interfaces;
+﻿using Application.Repositories;
+using Domain.Entities.Interfaces;
 using Infrastructure.Data;
-using Application.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.Abstractions
 {
-	public abstract class BaseRepository<TModel>(ApplicationDbContext context) : IRepository<TModel> where TModel : class, IModel
-	{
-		protected readonly ApplicationDbContext Context = context;
-		protected readonly DbSet<TModel> DbSet = context.Set<TModel>();
+    public abstract class BaseRepository<TModel>(ApplicationDbContext context) : IRepository<TModel>
+        where TModel : class, IModel
+    {
+        protected ApplicationDbContext Context { get; } = context;
 
-		public async Task<IEnumerable<TModel>> GetAllAsync()
-		{
-			return await DbSet.ToListAsync();
-		}
+        protected DbSet<TModel> DbSet { get; } = context.Set<TModel>();
 
-		public async ValueTask<TModel> GetByIdAsync(Guid id)
-		{
-			return await DbSet.FindAsync(id) ?? throw new InvalidOperationException($"{typeof(TModel).Name} with id {id} not found.");
-		}
+        public async Task<IEnumerable<TModel>> GetAllAsync()
+        {
+            return await DbSet.ToListAsync();
+        }
 
-		public async Task AddAsync(TModel model)
-		{
-			ArgumentNullException.ThrowIfNull(model);
+        public async ValueTask<TModel> GetByIdAsync(Guid id)
+        {
+            return await DbSet.FindAsync(id) ?? throw new InvalidOperationException($"{typeof(TModel).Name} with id {id} not found.");
+        }
 
-			await DbSet.AddAsync(model);
-			await Context.SaveChangesAsync();
-		}
+        public async Task AddAsync(TModel model)
+        {
+            ArgumentNullException.ThrowIfNull(model);
 
-		public async Task UpdateAsync(TModel model)
-		{
-			ArgumentNullException.ThrowIfNull(model);
+            await DbSet.AddAsync(model);
+            await Context.SaveChangesAsync();
+        }
 
-			DbSet.Update(model);
-			await Context.SaveChangesAsync();
-		}
+        public async Task UpdateAsync(TModel model)
+        {
+            ArgumentNullException.ThrowIfNull(model);
 
-		public virtual async Task DeleteAsync(TModel model)
-		{
-			ArgumentNullException.ThrowIfNull(model);
+            DbSet.Update(model);
+            await Context.SaveChangesAsync();
+        }
 
-			DbSet.Remove(model);
-			await Context.SaveChangesAsync();
-		}
-	}
+        public virtual async Task DeleteAsync(TModel model)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+
+            DbSet.Remove(model);
+            await Context.SaveChangesAsync();
+        }
+    }
 }

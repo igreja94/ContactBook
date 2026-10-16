@@ -32,7 +32,6 @@ namespace Webhost.Controllers
             return Ok(await contactService.GetContactsByUserId(userId));
         }
 
-        // Contact ids that do not belong to the user are ignored.
         [HttpDelete("user/{userId:guid}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

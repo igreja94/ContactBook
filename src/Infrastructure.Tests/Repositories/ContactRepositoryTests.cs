@@ -5,18 +5,18 @@ namespace Infrastructure.Tests.Repositories
 {
     public class ContactRepositoryTests : IClassFixture<InMemoryDbContext>, IAsyncLifetime
     {
-        private readonly InMemoryDbContext _context;
-        private readonly ContactRepository _repo;
+        private readonly InMemoryDbContext context;
+        private readonly ContactRepository repo;
 
         public ContactRepositoryTests(InMemoryDbContext context)
         {
-            _context = context;
-            _repo = new ContactRepository(context.Context);
+            this.context = context;
+            repo = new ContactRepository(context.Context);
         }
 
         async Task IAsyncLifetime.InitializeAsync()
         {
-            _context.Recreate();
+            context.Recreate();
             await Task.CompletedTask;
         }
 
@@ -28,21 +28,21 @@ namespace Infrastructure.Tests.Repositories
         [Fact]
         public async Task GetContactsByUser_ShouldReturnContacts_ForExistingUserWithContacts()
         {
-            //Arrange
-            var existingUser = _context.Context.Users.First();
+            // Arrange
+            var existingUser = context.Context.Users.First();
 
-            //Act
-            var contacts = await _repo.GetContactsByUserAsync(existingUser.Id);
+            // Act
+            var contacts = await repo.GetContactsByUserAsync(existingUser.Id);
 
-            //Assert
+            // Assert
             Assert.Equal(5, contacts.Count());
         }
 
         [Fact]
         public async Task GetContactsByUser_ShouldReturEmpty_ForExistingUserWithNoContacts()
         {
-            //Arrange
-            var userRepo = new UserRepository(_context.Context);
+            // Arrange
+            var userRepo = new UserRepository(context.Context);
 
             User user = new()
             {
@@ -52,69 +52,69 @@ namespace Infrastructure.Tests.Repositories
 
             await userRepo.AddAsync(user);
 
-            //Act
-            var contacts = await _repo.GetContactsByUserAsync(user.Id);
+            // Act
+            var contacts = await repo.GetContactsByUserAsync(user.Id);
 
-            //Assert
+            // Assert
             Assert.Empty(contacts);
         }
 
         [Fact]
         public async Task GetContactsByUser_ShouldNotReturnContacts_ForNonExistingUser()
         {
-            //Arrange
+            // Arrange
             var nonExistingUserId = Guid.NewGuid();
 
-            //Act
-            var contacts = await _repo.GetContactsByUserAsync(nonExistingUserId);
+            // Act
+            var contacts = await repo.GetContactsByUserAsync(nonExistingUserId);
 
-            //Assert
+            // Assert
             Assert.Empty(contacts);
         }
 
         [Fact]
         public async Task DeleteContactsByUser_ShouldDeleteContacts_ForExistingUserWithContacts()
         {
-            //Arrange
-            var existingUser = _context.Context.Users.First();
-            var contactIdsToDelete = _context.Context.Contacts
+            // Arrange
+            var existingUser = context.Context.Users.First();
+            var contactIdsToDelete = context.Context.Contacts
                 .Where(c => c.UserId == existingUser.Id).Take(2).Select(c => c.Id).ToList();
 
-            //Act
-            await _repo.DeleteContactsByUserAsync(existingUser.Id, contactIdsToDelete);
+            // Act
+            await repo.DeleteContactsByUserAsync(existingUser.Id, contactIdsToDelete);
 
-            //Assert
-            var remainingContacts = await _repo.GetContactsByUserAsync(existingUser.Id);
+            // Assert
+            var remainingContacts = await repo.GetContactsByUserAsync(existingUser.Id);
             Assert.Equal(3, remainingContacts.Count());
         }
 
         [Fact]
         public async Task DeleteContactsByUser_ShouldNotDeleteContacts_ForExistingUserWithContacts_WhenContactIdsDoNotMatch()
         {
-            //Arrange
-            var existingUser = _context.Context.Users.First();
+            // Arrange
+            var existingUser = context.Context.Users.First();
             var nonExistingContactIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
 
-            //Act
-            await _repo.DeleteContactsByUserAsync(existingUser.Id, nonExistingContactIds);
+            // Act
+            await repo.DeleteContactsByUserAsync(existingUser.Id, nonExistingContactIds);
 
-            //Assert
-            var remainingContacts = await _repo.GetContactsByUserAsync(existingUser.Id);
+            // Assert
+            var remainingContacts = await repo.GetContactsByUserAsync(existingUser.Id);
             Assert.Equal(5, remainingContacts.Count());
         }
 
         [Fact]
         public async Task DeleteContactsByUser_ShouldNotDeleteContacts_ForNonExistingUser()
         {
-            //Arrange
+            // Arrange
             Guid nonExistingUserId = Guid.NewGuid();
-            var contactIdsToDelete = _context.Context.Contacts.Select(c => c.Id).Take(2).ToList();
+            var contactIdsToDelete = context.Context.Contacts.Select(c => c.Id).Take(2).ToList();
 
-            //Act
-            await _repo.DeleteContactsByUserAsync(nonExistingUserId, contactIdsToDelete);
+            // Act
+            await repo.DeleteContactsByUserAsync(nonExistingUserId, contactIdsToDelete);
 
-            //Assert
-            var remainingContacts = await _repo.GetContactsByUserAsync(nonExistingUserId);
+            // Assert
+            var remainingContacts = await repo.GetContactsByUserAsync(nonExistingUserId);
             Assert.Empty(remainingContacts);
         }
     }

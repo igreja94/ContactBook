@@ -5,13 +5,14 @@ namespace Infrastructure.Data;
 
 public class ApplicationDbContext : DbContext
 {
-    public DbSet<User> Users { get; set; }
-    public DbSet<Contact> Contacts { get; set; }
-
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
+
+    public DbSet<User> Users { get; set; }
+
+    public DbSet<Contact> Contacts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -20,4 +21,3 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 }
-

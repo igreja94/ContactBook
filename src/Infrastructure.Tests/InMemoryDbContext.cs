@@ -6,18 +6,20 @@ namespace Infrastructure.Tests
 {
     public class InMemoryDbContext : IDisposable
     {
-        private readonly string _databaseName;
-        public ApplicationDbContext Context { get; private set; } = null!;
+        private readonly string databaseName;
 
         public InMemoryDbContext()
         {
-            _databaseName = Guid.NewGuid().ToString();
+            databaseName = Guid.NewGuid().ToString();
             Recreate();
         }
+
+        public ApplicationDbContext Context { get; private set; } = null!;
 
         public void Dispose()
         {
             Context.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         public void Recreate()
@@ -28,7 +30,7 @@ namespace Infrastructure.Tests
 
         public void CreateDatabase()
         {
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(_databaseName).Options;
+            var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(databaseName).Options;
             Context = new ApplicationDbContext(options);
             Context.Database.EnsureDeleted();
             Context.Database.EnsureCreated();
