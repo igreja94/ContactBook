@@ -1,7 +1,7 @@
-using Webhost.Controllers.Interfaces;
-using Application.DTO.Interfaces;
+﻿using Application.DTO.Interfaces;
 using Application.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Webhost.Controllers.Interfaces;
 
 namespace WebApi.Controllers.Abstractions
 {
@@ -10,13 +10,13 @@ namespace WebApi.Controllers.Abstractions
     public abstract class BaseController<TDto>(IService<TDto> service) : ControllerBase, IController<TDto>
         where TDto : IDto
     {
-        protected readonly IService<TDto> _service = service;
+        private readonly IService<TDto> service = service;
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public virtual async Task<ActionResult<IEnumerable<TDto>>> GetAll()
         {
-            return Ok(await _service.GetAllAsync());
+            return Ok(await service.GetAllAsync());
         }
 
         [HttpGet("{id:guid}")]
@@ -33,7 +33,7 @@ namespace WebApi.Controllers.Abstractions
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public virtual async Task<IActionResult> Create([FromBody] TDto dto)
         {
-            var created = await _service.AddAsync(dto);
+            var created = await service.AddAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
@@ -54,7 +54,7 @@ namespace WebApi.Controllers.Abstractions
                 return NotFound();
             }
 
-            await _service.UpdateAsync(dto);
+            await service.UpdateAsync(dto);
             return NoContent();
         }
 
@@ -68,7 +68,7 @@ namespace WebApi.Controllers.Abstractions
                 return NotFound();
             }
 
-            await _service.DeleteAsync(id);
+            await service.DeleteAsync(id);
             return NoContent();
         }
 
@@ -77,7 +77,7 @@ namespace WebApi.Controllers.Abstractions
         {
             try
             {
-                return await _service.GetByIdAsync(id);
+                return await service.GetByIdAsync(id);
             }
             catch (InvalidOperationException)
             {

@@ -13,7 +13,7 @@ internal static class ApiClientExtensions
             LastName = "User",
             DateOfBirth = new DateTime(1990, 1, 1),
             Email = $"{Guid.NewGuid():N}@example.com",
-            PhoneNumber = "+351900000000"
+            PhoneNumber = "+351900000000",
         });
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<UserDto>())!;
@@ -28,7 +28,7 @@ internal static class ApiClientExtensions
             DateOfBirth = new DateTime(1980, 5, 5),
             Email = $"{Guid.NewGuid():N}@example.com",
             PhoneNumber = "+351900000001",
-            UserId = userId
+            UserId = userId,
         });
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<ContactDto>())!;

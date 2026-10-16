@@ -3,139 +3,140 @@ using Infrastructure.Repositories;
 
 namespace Infrastructure.Tests.Repositories
 {
-	public class UserRepositoryTests : IClassFixture<InMemoryDbContext>, IAsyncLifetime
-	{
-		private readonly InMemoryDbContext _context;
-		private readonly UserRepository _repo;
+    public class UserRepositoryTests : IClassFixture<InMemoryDbContext>, IAsyncLifetime
+    {
+        private readonly InMemoryDbContext context;
+        private readonly UserRepository repo;
 
-		public UserRepositoryTests(InMemoryDbContext context)
-		{
-			_context = context;
-			_repo = new UserRepository(context.Context);
-		}
+        public UserRepositoryTests(InMemoryDbContext context)
+        {
+            this.context = context;
+            repo = new UserRepository(context.Context);
+        }
 
-		async Task IAsyncLifetime.InitializeAsync()
-		{
-			_context.Recreate();
-			await Task.CompletedTask;
-		}
+        async Task IAsyncLifetime.InitializeAsync()
+        {
+            context.Recreate();
+            await Task.CompletedTask;
+        }
 
-		async Task IAsyncLifetime.DisposeAsync()
-		{
-			await Task.CompletedTask;
-		}
+        async Task IAsyncLifetime.DisposeAsync()
+        {
+            await Task.CompletedTask;
+        }
 
-		[Fact]
-		public async Task GetAllAsync_ShouldReturnAllEntities()
-		{
-			//Act
-			var entities = await _repo.GetAllAsync();
+        [Fact]
+        public async Task GetAllAsync_ShouldReturnAllEntities()
+        {
+            // Act
+            var entities = await repo.GetAllAsync();
 
-			//Assert
-			Assert.Equal(5, entities.Count());
-		}
+            // Assert
+            Assert.Equal(5, entities.Count());
+        }
 
-		[Fact]
-		public async Task GetAllAsync_ShouldReturnEmptyCollection_WhenNoEntities()
-		{
-			//Arrange
-			_context.Context.Users.RemoveRange(_context.Context.Users);
-			_context.Context.SaveChanges();
+        [Fact]
+        public async Task GetAllAsync_ShouldReturnEmptyCollection_WhenNoEntities()
+        {
+            // Arrange
+            context.Context.Users.RemoveRange(context.Context.Users);
+            context.Context.SaveChanges();
 
-			//Act
-			var entities = await _repo.GetAllAsync();
-			//Assert
-			Assert.Empty(entities);
-		}
+            // Act
+            var entities = await repo.GetAllAsync();
 
-		[Fact]
-		public async Task GetByIdAsync_ShouldReturnCorrectEntity()
-		{
-			//Arrange
-			var existingUser = _context.Context.Users.First();
+            // Assert
+            Assert.Empty(entities);
+        }
 
-			//Act
-			var entity = await _repo.GetByIdAsync(existingUser.Id);
+        [Fact]
+        public async Task GetByIdAsync_ShouldReturnCorrectEntity()
+        {
+            // Arrange
+            var existingUser = context.Context.Users.First();
 
-			//Assert
-			Assert.NotNull(entity);
-			Assert.Equal(existingUser.Id, entity.Id);
-		}
+            // Act
+            var entity = await repo.GetByIdAsync(existingUser.Id);
 
-		[Fact]
-		public async Task GetByIdAsync_ShouldThrowException_WhenEntityNotFound()
-		{
-			//Arrange
-			var nonExistentId = Guid.NewGuid();
+            // Assert
+            Assert.NotNull(entity);
+            Assert.Equal(existingUser.Id, entity.Id);
+        }
 
-			//Act & Assert
-			await Assert.ThrowsAsync<InvalidOperationException>(async () => await _repo.GetByIdAsync(nonExistentId));
-		}
+        [Fact]
+        public async Task GetByIdAsync_ShouldThrowException_WhenEntityNotFound()
+        {
+            // Arrange
+            var nonExistentId = Guid.NewGuid();
 
-		[Fact]
-		public async Task AddAsync_ShouldAddEntity()
-		{
-			//Arrange
-			var newUser = new User();
-			Guid newUserId = newUser.Id;
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await repo.GetByIdAsync(nonExistentId));
+        }
 
-			//Act
-			await _repo.AddAsync(newUser);
-			var addedUser = await _repo.GetByIdAsync(newUserId);
+        [Fact]
+        public async Task AddAsync_ShouldAddEntity()
+        {
+            // Arrange
+            var newUser = new User();
+            Guid newUserId = newUser.Id;
 
-			//Assert
-			Assert.NotNull(addedUser);
-			Assert.Equal(newUserId, addedUser.Id);
-		}
+            // Act
+            await repo.AddAsync(newUser);
+            var addedUser = await repo.GetByIdAsync(newUserId);
 
-		[Fact]
-		public async Task AddAsync_ShouldThrowException_WhenModelIsNull()
-		{
-			//Act & Assert
-			await Assert.ThrowsAsync<ArgumentNullException>(async () => await _repo.AddAsync(null!));
-		}
+            // Assert
+            Assert.NotNull(addedUser);
+            Assert.Equal(newUserId, addedUser.Id);
+        }
 
-		[Fact]
-		public async Task UpdateAsync_ShouldUpdateEntity()
-		{
-			//Arrange
-			var existingUser = _context.Context.Users.First();
-			existingUser.FirstName = "UpdatedName";
+        [Fact]
+        public async Task AddAsync_ShouldThrowException_WhenModelIsNull()
+        {
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await repo.AddAsync(null!));
+        }
 
-			//Act
-			await _repo.UpdateAsync(existingUser);
-			var updatedUser = await _repo.GetByIdAsync(existingUser.Id);
+        [Fact]
+        public async Task UpdateAsync_ShouldUpdateEntity()
+        {
+            // Arrange
+            var existingUser = context.Context.Users.First();
+            existingUser.FirstName = "UpdatedName";
 
-			//Assert
-			Assert.NotNull(updatedUser);
-			Assert.Equal("UpdatedName", updatedUser.FirstName);
-		}
+            // Act
+            await repo.UpdateAsync(existingUser);
+            var updatedUser = await repo.GetByIdAsync(existingUser.Id);
 
-		[Fact]
-		public async Task UpdateAsync_ShouldThrowException_WhenModelIsNull()
-		{
-			//Act & Assert
-			await Assert.ThrowsAsync<ArgumentNullException>(async () => await _repo.UpdateAsync(null!));
-		}
+            // Assert
+            Assert.NotNull(updatedUser);
+            Assert.Equal("UpdatedName", updatedUser.FirstName);
+        }
 
-		[Fact]
-		public async Task DeleteAsync_ShouldRemoveEntity()
-		{
-			//Arrange
-			var existingUser = _context.Context.Users.First();
+        [Fact]
+        public async Task UpdateAsync_ShouldThrowException_WhenModelIsNull()
+        {
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await repo.UpdateAsync(null!));
+        }
 
-			//Act
-			await _repo.DeleteAsync(existingUser);
+        [Fact]
+        public async Task DeleteAsync_ShouldRemoveEntity()
+        {
+            // Arrange
+            var existingUser = context.Context.Users.First();
 
-			//Assert
-			await Assert.ThrowsAsync<InvalidOperationException>(async () => await _repo.GetByIdAsync(existingUser.Id));
-		}
+            // Act
+            await repo.DeleteAsync(existingUser);
 
-		[Fact]
-		public async Task DeleteAsync_ShouldThrowException_WhenModelIsNull()
-		{
-			//Act & Assert
-			await Assert.ThrowsAsync<ArgumentNullException>(async () => await _repo.DeleteAsync(null!));
-		}
-	}
+            // Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await repo.GetByIdAsync(existingUser.Id));
+        }
+
+        [Fact]
+        public async Task DeleteAsync_ShouldThrowException_WhenModelIsNull()
+        {
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await repo.DeleteAsync(null!));
+        }
+    }
 }

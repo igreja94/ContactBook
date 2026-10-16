@@ -1,7 +1,7 @@
-﻿using Domain.Entities;
+﻿using Application.Repositories;
+using Domain.Entities;
 using Infrastructure.Data;
 using Infrastructure.Repositories.Abstractions;
-using Application.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories

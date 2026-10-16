@@ -15,7 +15,7 @@ namespace Application.Extensions
                 DateOfBirth = contact.DateOfBirth,
                 Email = contact.Email,
                 PhoneNumber = contact.PhoneNumber,
-                UserId = contact.UserId
+                UserId = contact.UserId,
             };
         }
 
@@ -28,7 +28,7 @@ namespace Application.Extensions
                 DateOfBirth = contactDto.DateOfBirth ?? DateTime.MinValue,
                 Email = contactDto.Email ?? string.Empty,
                 PhoneNumber = contactDto.PhoneNumber ?? string.Empty,
-                UserId = contactDto.UserId ?? Guid.Empty
+                UserId = contactDto.UserId ?? Guid.Empty,
             };
         }
     }

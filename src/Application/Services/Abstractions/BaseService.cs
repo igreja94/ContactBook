@@ -1,7 +1,7 @@
 ﻿using Application.DTO.Interfaces;
+using Application.Repositories;
 using Application.Services.Interfaces;
 using Domain.Entities.Interfaces;
-using Application.Repositories;
 
 namespace Application.Services.Abstractions
 {
@@ -9,14 +9,6 @@ namespace Application.Services.Abstractions
         where TModel : IModel
         where TDto : IDto
     {
-
-        protected abstract TDto MapToDto(TModel model);
-
-        protected abstract TModel ToModel(TDto dto);
-
-        // Copies the updatable fields of the dto onto the tracked model, preserving fields the dto does not expose.
-        protected abstract void ApplyUpdate(TModel model, TDto dto);
-
         public virtual async Task<IEnumerable<TDto>> GetAllAsync()
         {
             var models = await repository.GetAllAsync();
@@ -54,5 +46,11 @@ namespace Application.Services.Abstractions
             await repository.DeleteAsync(model);
         }
 
+        protected abstract TDto MapToDto(TModel model);
+
+        protected abstract TModel ToModel(TDto dto);
+
+        // Copies the updatable fields of the dto onto the tracked model, preserving fields the dto does not expose.
+        protected abstract void ApplyUpdate(TModel model, TDto dto);
     }
 }

@@ -1,0 +1,32 @@
+<Project>
+
+  <!-- Applies the code style and analyzer fixes to the project sources before compiling.
+       Skipped on CI (where violations must fail the build), in Release and when FormatOnBuild=false.
+       Only runs when a source file or the style configuration changed since the last run. -->
+  <PropertyGroup>
+    <FormatOnBuild Condition="'$(FormatOnBuild)' == ''">true</FormatOnBuild>
+    <FormatStampFile>$(MSBuildProjectDirectory)\$(BaseIntermediateOutputPath)format.stamp</FormatStampFile>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(FormatOnBuild)' == 'true'">
+    <FormatInput Include="$(MSBuildProjectDirectory)\**\*.cs" Exclude="$(MSBuildProjectDirectory)\obj\**;$(MSBuildProjectDirectory)\bin\**" />
+    <FormatInput Include="$(MSBuildThisFileDirectory).editorconfig;$(MSBuildThisFileDirectory)stylecop.json" />
+  </ItemGroup>
+
+  <Target Name="FormatOnBuild"
+          BeforeTargets="CoreCompile"
+          Inputs="@(FormatInput)"
+          Outputs="$(FormatStampFile)"
+          Condition="'$(FormatOnBuild)' == 'true' and '$(DesignTimeBuild)' != 'true' and '$(CI)' != 'true' and '$(Configuration)' == 'Debug' and '$(DOTNET_FORMAT_ACTIVE)' != 'true'">
+    <!-- DOTNET_FORMAT_ACTIVE stops the design-time builds started by dotnet format from formatting again. -->
+    <Exec Command="dotnet format &quot;$(MSBuildProjectFullPath)&quot; --no-restore --severity warn"
+          EnvironmentVariables="DOTNET_FORMAT_ACTIVE=true"
+          ContinueOnError="true"
+          StandardOutputImportance="low"
+          StandardErrorImportance="low">
+      <Output TaskParameter="ExitCode" PropertyName="FormatExitCode" />
+    </Exec>
+    <Touch Files="$(FormatStampFile)" AlwaysCreate="true" Condition="'$(FormatExitCode)' == '0'" />
+  </Target>
+
+</Project>

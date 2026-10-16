@@ -1,8 +1,8 @@
 ﻿using Application.DTO;
 using Application.Extensions;
+using Application.Repositories;
 using Application.Services.Abstractions;
 using Domain.Entities;
-using Application.Repositories;
 
 namespace Application.Services
 {

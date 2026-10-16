@@ -1,5 +1,4 @@
 ﻿using Aspire.Hosting;
-using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,7 +9,7 @@ namespace Webhost.Tests.Fixtures;
 // The Webhost migrates and seeds the database on startup.
 public sealed class WebhostFixture : IAsyncLifetime
 {
-    private DistributedApplication? _app;
+    private DistributedApplication? app;
 
     public HttpClient Client { get; private set; } = null!;
 
@@ -25,15 +24,25 @@ public sealed class WebhostFixture : IAsyncLifetime
         builder.Services.ConfigureHttpClientDefaults(http => http.ConfigurePrimaryHttpMessageHandler(() =>
             new HttpClientHandler
             {
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
             }));
 
-        _app = await builder.BuildAsync(cts.Token);
-        await _app.StartAsync(cts.Token);
-        await _app.ResourceNotifications.WaitForResourceHealthyAsync("webhost", cts.Token);
+        app = await builder.BuildAsync(cts.Token);
+        await app.StartAsync(cts.Token);
+        await app.ResourceNotifications.WaitForResourceHealthyAsync("webhost", cts.Token);
 
-        Client = _app.CreateHttpClient("webhost");
+        Client = app.CreateHttpClient("webhost");
         await WaitUntilReadyAsync(cts.Token);
+    }
+
+    public async Task DisposeAsync()
+    {
+        Client?.Dispose();
+
+        if (app is not null)
+        {
+            await app.DisposeAsync();
+        }
     }
 
     // The Webhost only starts listening once the database is migrated and seeded.
@@ -56,20 +65,4 @@ public sealed class WebhostFixture : IAsyncLifetime
             await Task.Delay(500, cancellationToken);
         }
     }
-
-    public async Task DisposeAsync()
-    {
-        Client?.Dispose();
-
-        if (_app is not null)
-        {
-            await _app.DisposeAsync();
-        }
-    }
-}
-
-[CollectionDefinition(Name)]
-public sealed class WebhostCollection : ICollectionFixture<WebhostFixture>
-{
-    public const string Name = "Webhost";
 }
