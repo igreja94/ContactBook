@@ -2,5 +2,6 @@
 {
     public interface IDto
     {
+        Guid? Id { get; set; }
     }
 }

@@ -9,12 +9,13 @@ namespace Application.Extensions
         {
             return new ContactDto
             {
-                Id = contact.Id.ToString(),
+                Id = contact.Id,
                 FirstName = contact.FirstName,
                 LastName = contact.LastName,
                 DateOfBirth = contact.DateOfBirth,
                 Email = contact.Email,
-                PhoneNumber = contact.PhoneNumber
+                PhoneNumber = contact.PhoneNumber,
+                UserId = contact.UserId
             };
         }
 
@@ -22,12 +23,12 @@ namespace Application.Extensions
         {
             return new Contact
             {
-                Id = string.IsNullOrEmpty(contactDto.Id) ? Guid.NewGuid() : Guid.Parse(contactDto.Id),
                 FirstName = contactDto.FirstName ?? string.Empty,
                 LastName = contactDto.LastName ?? string.Empty,
                 DateOfBirth = contactDto.DateOfBirth ?? DateTime.MinValue,
                 Email = contactDto.Email ?? string.Empty,
-                PhoneNumber = contactDto.PhoneNumber ?? string.Empty
+                PhoneNumber = contactDto.PhoneNumber ?? string.Empty,
+                UserId = contactDto.UserId ?? Guid.Empty
             };
         }
     }

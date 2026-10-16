@@ -51,7 +51,7 @@ namespace Application.Tests.Services
 			Assert.Equal(Users.Count, result.Count());
 			foreach (var user in Users)
 			{
-				Assert.Contains(result, r => r.Id == user.Id.ToString() && r.FirstName == user.FirstName && r.LastName == user.LastName);
+				Assert.Contains(result, r => r.Id == user.Id && r.FirstName == user.FirstName && r.LastName == user.LastName);
 			}
 		}
 
@@ -61,10 +61,10 @@ namespace Application.Tests.Services
 			// Arrange
 			var targetUser = Users.First();
 			// Act
-			var result = await _service.GetByIdAsync(targetUser.Id.ToString());
+			var result = await _service.GetByIdAsync(targetUser.Id);
 			// Assert
 			Assert.NotNull(result);
-			Assert.Equal(targetUser.Id.ToString(), result.Id);
+			Assert.Equal(targetUser.Id, result.Id);
 			Assert.Equal(targetUser.FirstName, result.FirstName);
 			Assert.Equal(targetUser.LastName, result.LastName);
 		}
@@ -73,7 +73,7 @@ namespace Application.Tests.Services
 		public async Task GetByIdAsync_ShouldThrow_WhenUserNotFound()
 		{
 			// Arrange
-			var nonExistentId = Guid.NewGuid().ToString();
+			var nonExistentId = Guid.NewGuid();
 
 			// Act & Assert
 			await Assert.ThrowsAsync<InvalidOperationException>(() => _service.GetByIdAsync(nonExistentId));
@@ -83,12 +83,15 @@ namespace Application.Tests.Services
 		public async Task AddAsync_ShouldAddUser()
 		{
 			// Arrange
-			var newUserDto = new UserDto { Id = Guid.NewGuid().ToString(), FirstName = "New", LastName = "User" };
+			var newUserDto = new UserDto { Id = Guid.NewGuid(), FirstName = "New", LastName = "User" };
 			// Act
-			await _service.AddAsync(newUserDto);
+			var result = await _service.AddAsync(newUserDto);
 			// Assert
+			Assert.NotEqual(newUserDto.Id, result.Id);
+			Assert.NotEqual(Guid.Empty, result.Id!.Value);
+			Assert.Equal(newUserDto.FirstName, result.FirstName);
 			MockUserRepo.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Once);
-			MockUserRepo.Verify(r => r.AddAsync(It.Is<User>(u => u.Id == Guid.Parse(newUserDto.Id))), Times.Once);
+			MockUserRepo.Verify(r => r.AddAsync(It.Is<User>(u => u.Id == result.Id!.Value)), Times.Once);
 			MockUserRepo.Verify(r => r.AddAsync(It.Is<User>(u => u.FirstName == newUserDto.FirstName)), Times.Once);
 		}
 
@@ -99,7 +102,7 @@ namespace Application.Tests.Services
 			var existingUser = Users.First();
 			var updatedUserDto = new UserDto
 			{
-				Id = existingUser.Id.ToString(),
+				Id = existingUser.Id,
 				FirstName = "Updated",
 				LastName = existingUser.LastName
 			};
@@ -107,7 +110,7 @@ namespace Application.Tests.Services
 			await _service.UpdateAsync(updatedUserDto);
 			// Assert
 			MockUserRepo.Verify(r => r.UpdateAsync(It.IsAny<User>()), Times.Once);
-			MockUserRepo.Verify(r => r.UpdateAsync(It.Is<User>(u => u.Id == Guid.Parse(updatedUserDto.Id) && u.FirstName == updatedUserDto.FirstName)), Times.Once);
+			MockUserRepo.Verify(r => r.UpdateAsync(It.Is<User>(u => u.Id == updatedUserDto.Id && u.FirstName == updatedUserDto.FirstName)), Times.Once);
 
 		}
 
@@ -117,7 +120,7 @@ namespace Application.Tests.Services
 			// Arrange
 			var existingUser = Users.First();
 			// Act
-			await _service.DeleteAsync(existingUser.Id.ToString());
+			await _service.DeleteAsync(existingUser.Id);
 			// Assert
 			MockUserRepo.Verify(r => r.DeleteAsync(It.IsAny<User>()), Times.Once);
 			MockUserRepo.Verify(r => r.DeleteAsync(It.Is<User>(u => u.Id == existingUser.Id)), Times.Once);

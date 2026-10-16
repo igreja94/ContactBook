@@ -19,16 +19,26 @@ namespace Application.Services
 			return dto.ToModel();
 		}
 
-		public async Task<IEnumerable<ContactDto>> GetContactsByUserId(string id)
+		protected override void ApplyUpdate(Contact model, ContactDto dto)
 		{
-			var guid = Guid.Parse(id);
-			var contacts = await repository.GetContactsByUserAsync(guid);
+			model.FirstName = dto.FirstName ?? string.Empty;
+			model.LastName = dto.LastName ?? string.Empty;
+			model.DateOfBirth = dto.DateOfBirth ?? DateTime.MinValue;
+			model.Email = dto.Email ?? string.Empty;
+			model.PhoneNumber = dto.PhoneNumber ?? string.Empty;
+		}
+
+		public async Task<IEnumerable<ContactDto>> GetContactsByUserId(Guid id)
+		{
+			var contacts = await repository.GetContactsByUserAsync(id);
 			return contacts.Select(c => c.ToDto());
 		}
 
-		public Task DeleteContactsByUserAsync(string userId, ICollection<string> contactIds)
+		public Task DeleteContactsByUserAsync(Guid userId, ICollection<Guid> contactIds)
 		{
-			throw new NotImplementedException();
+			ArgumentNullException.ThrowIfNull(contactIds);
+
+			return repository.DeleteContactsByUserAsync(userId, contactIds);
 		}
 
 

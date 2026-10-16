@@ -9,7 +9,7 @@ namespace Application.Extensions
 		{
 			return new UserDto
 			{
-				Id = user.Id.ToString(),
+				Id = user.Id,
 				FirstName = user.FirstName,
 				LastName = user.LastName,
 				DateOfBirth = user.DateOfBirth,
@@ -22,7 +22,6 @@ namespace Application.Extensions
 		{
 			return new User
 			{
-				Id = Guid.Parse(userDto.Id ?? string.Empty),
 				FirstName = userDto.FirstName ?? string.Empty,
 				LastName = userDto.LastName ?? string.Empty,
 				DateOfBirth = userDto.DateOfBirth ?? DateTime.MinValue,

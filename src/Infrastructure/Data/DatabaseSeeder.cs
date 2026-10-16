@@ -1,5 +1,4 @@
 using Domain.Entities;
-using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -28,7 +27,6 @@ public static class DatabaseSeeder
             DateOfBirth = new DateTime(1985, 3, 14),
             Email = "ada.admin@example.com",
             PhoneNumber = "+351910000001",
-            Role = Role.ADMIN,
             PasswordHash = placeholderPasswordHash
         };
 
@@ -39,7 +37,6 @@ public static class DatabaseSeeder
             DateOfBirth = new DateTime(1992, 7, 2),
             Email = "ulysses.user@example.com",
             PhoneNumber = "+351910000002",
-            Role = Role.USER,
             PasswordHash = placeholderPasswordHash
         };
 
