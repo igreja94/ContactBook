@@ -1,6 +1,6 @@
 ﻿using Domain.Entities.Interfaces;
 
-namespace Infrastructure.Repositories.Interfaces
+namespace Application.Repositories
 {
     public interface IRepository<TModel> where TModel : IModel
     {

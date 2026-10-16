@@ -1,6 +1,6 @@
 ﻿using Domain.Entities;
 
-namespace Infrastructure.Repositories.Interfaces
+namespace Application.Repositories
 {
     public interface IContactRepository : IRepository<Contact>
     {

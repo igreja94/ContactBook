@@ -1,10 +1,9 @@
 <Solution>
   <Project Path="Application.Tests/Application.Tests.csproj" Id="5d423667-422b-4b0f-831e-29490a703380" />
-  <Project Path="API/API.csproj" />
+  <Project Path="Webhost/Webhost.csproj" />
   <Project Path="Application/Application.csproj" />
-  <Project Path="docker-compose.dcproj">
-    <Build />
-  </Project>
+  <Project Path="AppHost/AppHost.csproj" />
+  <Project Path="ServiceDefaults/ServiceDefaults.csproj" />
   <Project Path="Domain/Domain.csproj" />
   <Project Path="Infrastructure.Tests/Infrastructure.Tests.csproj" Id="47602e2b-1c0a-46c0-acb5-474ecca7c7a2" />
   <Project Path="Infrastructure/Infrastructure.csproj" />
