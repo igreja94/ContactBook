@@ -1,30 +1,14 @@
-﻿using Application.DTO;
-using Application.Extensions;
-using Application.Repositories;
+using Application.DTO;
+using Application.Mappers.Interfaces;
+using Application.Repositories.Interfaces;
 using Application.Services.Abstractions;
+using Application.Services.Interfaces;
 using Domain.Entities;
 
 namespace Application.Services
 {
-    public class UserService(IUserRepository repository) : BaseService<User, UserDto>(repository)
+    public class UserService(IUserRepository repository, IUserMapper mapper)
+        : BaseService<User, UserDto>(repository, mapper), IUserService
     {
-        protected override UserDto MapToDto(User model)
-        {
-            return model.ToDto();
-        }
-
-        protected override User ToModel(UserDto dto)
-        {
-            return dto.ToModel();
-        }
-
-        protected override void ApplyUpdate(User model, UserDto dto)
-        {
-            model.FirstName = dto.FirstName ?? string.Empty;
-            model.LastName = dto.LastName ?? string.Empty;
-            model.DateOfBirth = dto.DateOfBirth ?? DateTime.MinValue;
-            model.Email = dto.Email ?? string.Empty;
-            model.PhoneNumber = dto.PhoneNumber ?? string.Empty;
-        }
     }
 }

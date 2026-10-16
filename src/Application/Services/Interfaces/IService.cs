@@ -5,14 +5,14 @@ namespace Application.Services.Interfaces
     public interface IService<TDto>
         where TDto : IDto
     {
-        Task<IEnumerable<TDto>> GetAllAsync();
+        Task<IEnumerable<TDto>> GetAllAsync(CancellationToken cancellationToken = default);
 
-        Task<TDto> GetByIdAsync(Guid id);
+        Task<TDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
-        Task<TDto> AddAsync(TDto dto);
+        Task<TDto> AddAsync(TDto dto, CancellationToken cancellationToken = default);
 
-        Task UpdateAsync(TDto dto);
+        Task UpdateAsync(TDto dto, CancellationToken cancellationToken = default);
 
-        Task DeleteAsync(Guid id);
+        Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
     }
 }

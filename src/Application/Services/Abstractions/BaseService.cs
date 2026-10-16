@@ -1,56 +1,50 @@
 ﻿using Application.DTO.Interfaces;
-using Application.Repositories;
+using Application.Mappers.Interfaces;
+using Application.Repositories.Interfaces;
 using Application.Services.Interfaces;
 using Domain.Entities.Interfaces;
 
 namespace Application.Services.Abstractions
 {
-    public abstract class BaseService<TModel, TDto>(IRepository<TModel> repository) : IService<TDto>
+    public abstract class BaseService<TModel, TDto>(IRepository<TModel> repository, IEntityMapper<TModel, TDto> mapper) : IService<TDto>
         where TModel : IModel
         where TDto : IDto
     {
-        public virtual async Task<IEnumerable<TDto>> GetAllAsync()
+        public virtual async Task<IEnumerable<TDto>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            var models = await repository.GetAllAsync();
-            return models.Select(e => MapToDto(e));
+            var models = await repository.GetAllAsync(cancellationToken);
+            return models.Select(mapper.ToDto);
         }
 
-        public virtual async Task<TDto> GetByIdAsync(Guid id)
+        public virtual async Task<TDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var model = await repository.GetByIdAsync(id);
-            return MapToDto(model);
+            var model = await repository.GetByIdAsync(id, cancellationToken);
+            return mapper.ToDto(model);
         }
 
         // Identity is always generated here, any Id supplied by the caller is ignored.
-        public virtual async Task<TDto> AddAsync(TDto dto)
+        public virtual async Task<TDto> AddAsync(TDto dto, CancellationToken cancellationToken = default)
         {
-            var model = ToModel(dto);
+            var model = mapper.ToModel(dto);
             model.Id = Guid.NewGuid();
-            await repository.AddAsync(model);
-            return MapToDto(model);
+            await repository.AddAsync(model, cancellationToken);
+            return mapper.ToDto(model);
         }
 
-        public virtual async Task UpdateAsync(TDto dto)
+        public virtual async Task UpdateAsync(TDto dto, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(dto);
 
             var id = dto.Id ?? throw new ArgumentException("The dto must have an Id.", nameof(dto));
-            var model = await repository.GetByIdAsync(id);
-            ApplyUpdate(model, dto);
-            await repository.UpdateAsync(model);
+            var model = await repository.GetByIdAsync(id, cancellationToken);
+            mapper.ApplyTo(dto, model);
+            await repository.UpdateAsync(model, cancellationToken);
         }
 
-        public virtual async Task DeleteAsync(Guid id)
+        public virtual async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var model = await repository.GetByIdAsync(id);
-            await repository.DeleteAsync(model);
+            var model = await repository.GetByIdAsync(id, cancellationToken);
+            await repository.DeleteAsync(model, cancellationToken);
         }
-
-        protected abstract TDto MapToDto(TModel model);
-
-        protected abstract TModel ToModel(TDto dto);
-
-        // Copies the updatable fields of the dto onto the tracked model, preserving fields the dto does not expose.
-        protected abstract void ApplyUpdate(TModel model, TDto dto);
     }
 }

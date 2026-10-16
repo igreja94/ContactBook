@@ -1,14 +1,15 @@
-﻿using Domain.Entities;
+﻿using Application.Exceptions;
+using Domain.Entities;
 using Infrastructure.Repositories;
 
 namespace Infrastructure.Tests.Repositories
 {
-    public class UserRepositoryTests : IClassFixture<InMemoryDbContext>, IAsyncLifetime
+    public class UserRepositoryTests : IClassFixture<SqliteTestDatabase>, IAsyncLifetime
     {
-        private readonly InMemoryDbContext context;
+        private readonly SqliteTestDatabase context;
         private readonly UserRepository repo;
 
-        public UserRepositoryTests(InMemoryDbContext context)
+        public UserRepositoryTests(SqliteTestDatabase context)
         {
             this.context = context;
             repo = new UserRepository(context.Context);
@@ -70,7 +71,24 @@ namespace Infrastructure.Tests.Repositories
             var nonExistentId = Guid.NewGuid();
 
             // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => await repo.GetByIdAsync(nonExistentId));
+            await Assert.ThrowsAsync<NotFoundException>(async () => await repo.GetByIdAsync(nonExistentId));
+        }
+
+        [Fact]
+        public async Task ExistsAsync_ShouldReturnTrue_WhenEntityExists()
+        {
+            // Arrange
+            var existingUser = context.Context.Users.First();
+
+            // Act & Assert
+            Assert.True(await repo.ExistsAsync(existingUser.Id));
+        }
+
+        [Fact]
+        public async Task ExistsAsync_ShouldReturnFalse_WhenEntityDoesNotExist()
+        {
+            // Act & Assert
+            Assert.False(await repo.ExistsAsync(Guid.NewGuid()));
         }
 
         [Fact]
@@ -129,7 +147,7 @@ namespace Infrastructure.Tests.Repositories
             await repo.DeleteAsync(existingUser);
 
             // Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => await repo.GetByIdAsync(existingUser.Id));
+            await Assert.ThrowsAsync<NotFoundException>(async () => await repo.GetByIdAsync(existingUser.Id));
         }
 
         [Fact]
