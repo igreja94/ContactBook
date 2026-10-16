@@ -21,6 +21,13 @@ public sealed class WebhostFixture : IAsyncLifetime
         var builder = await DistributedApplicationTestingBuilder.CreateAsync<Projects.AppHost>(
             ["--SqlServer:Ephemeral=true"], cts.Token);
 
+        // The ASP.NET Core dev certificate is not trusted on CI agents, so accept it for the test clients.
+        builder.Services.ConfigureHttpClientDefaults(http => http.ConfigurePrimaryHttpMessageHandler(() =>
+            new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            }));
+
         _app = await builder.BuildAsync(cts.Token);
         await _app.StartAsync(cts.Token);
         await _app.ResourceNotifications.WaitForResourceHealthyAsync("webhost", cts.Token);
