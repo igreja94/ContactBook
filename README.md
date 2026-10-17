@@ -6,7 +6,7 @@ A contact book REST API built with .NET 10, following Clean Architecture. Data i
 
 - `Domain`: entities
 - `Application`: DTOs, services, repository abstractions, mappers and application exceptions
-- `Infrastructure`: EF Core `DbContext`, migrations, repositories, seed data
+- `Infrastructure`: EF Core, migrations, repositories, seed data
 - `Webhost`: ASP.NET Core API (controllers and the global exception handlers)
 - `AppHost` and `ServiceDefaults`: Aspire orchestration (SQL Server container + Webhost) and shared defaults
 - Test projects (`Application.Tests`, `Infrastructure.Tests`, `Webhost.Tests`): unit and integration tests
