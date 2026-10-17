@@ -1,39 +1,41 @@
 ﻿using Domain.Entities;
 using Infrastructure.Data;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Tests
 {
-    public class InMemoryDbContext : IDisposable
+    // The EF in-memory provider does not support ExecuteDelete, so the tests run on an in-memory SQLite database.
+    public class SqliteTestDatabase : IDisposable
     {
-        private readonly string databaseName;
+        private readonly SqliteConnection connection;
 
-        public InMemoryDbContext()
+        public SqliteTestDatabase()
         {
-            databaseName = Guid.NewGuid().ToString();
-            Recreate();
+            connection = new SqliteConnection("DataSource=:memory:");
+            connection.Open();
+
+            var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseSqlite(connection).Options;
+            Context = new ApplicationDbContext(options);
+            Context.Database.EnsureCreated();
+            SeedData();
         }
 
-        public ApplicationDbContext Context { get; private set; } = null!;
+        public ApplicationDbContext Context { get; }
 
         public void Dispose()
         {
             Context.Dispose();
+            connection.Dispose();
             GC.SuppressFinalize(this);
         }
 
         public void Recreate()
         {
-            CreateDatabase();
+            Context.ChangeTracker.Clear();
+            Context.Contacts.ExecuteDelete();
+            Context.Users.ExecuteDelete();
             SeedData();
-        }
-
-        public void CreateDatabase()
-        {
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(databaseName).Options;
-            Context = new ApplicationDbContext(options);
-            Context.Database.EnsureDeleted();
-            Context.Database.EnsureCreated();
         }
 
         public void SeedData()

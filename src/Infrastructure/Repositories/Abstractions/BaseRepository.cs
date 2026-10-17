@@ -1,4 +1,5 @@
-﻿using Application.Repositories;
+﻿using Application.Exceptions;
+using Application.Repositories.Interfaces;
 using Domain.Entities.Interfaces;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -12,38 +13,48 @@ namespace Infrastructure.Repositories.Abstractions
 
         protected DbSet<TModel> DbSet { get; } = context.Set<TModel>();
 
-        public async Task<IEnumerable<TModel>> GetAllAsync()
+        public async Task<IEnumerable<TModel>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            return await DbSet.ToListAsync();
+            return await DbSet.ToListAsync(cancellationToken);
         }
 
-        public async ValueTask<TModel> GetByIdAsync(Guid id)
+        public async ValueTask<TModel> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            return await DbSet.FindAsync(id) ?? throw new InvalidOperationException($"{typeof(TModel).Name} with id {id} not found.");
+            return await DbSet.FindAsync([id], cancellationToken) ?? throw new NotFoundException($"{typeof(TModel).Name} with id {id} not found.");
         }
 
-        public async Task AddAsync(TModel model)
+        public Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            ArgumentNullException.ThrowIfNull(model);
-
-            await DbSet.AddAsync(model);
-            await Context.SaveChangesAsync();
+            return DbSet.AnyAsync(e => e.Id == id, cancellationToken);
         }
 
-        public async Task UpdateAsync(TModel model)
+        public async Task AddAsync(TModel model, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(model);
 
-            DbSet.Update(model);
-            await Context.SaveChangesAsync();
+            await DbSet.AddAsync(model, cancellationToken);
+            await Context.SaveChangesAsync(cancellationToken);
         }
 
-        public virtual async Task DeleteAsync(TModel model)
+        public async Task UpdateAsync(TModel model, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+
+            // Tracked entities are already change-detected, Update is only needed to attach detached ones.
+            if (Context.Entry(model).State == EntityState.Detached)
+            {
+                DbSet.Update(model);
+            }
+
+            await Context.SaveChangesAsync(cancellationToken);
+        }
+
+        public virtual async Task DeleteAsync(TModel model, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(model);
 
             DbSet.Remove(model);
-            await Context.SaveChangesAsync();
+            await Context.SaveChangesAsync(cancellationToken);
         }
     }
 }

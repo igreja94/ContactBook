@@ -17,9 +17,6 @@ public static class DatabaseSeeder
             return;
         }
 
-        // Placeholder value: seeded users are not meant to authenticate.
-        const string placeholderPasswordHash = "SEEDED-PLACEHOLDER-NOT-A-REAL-HASH";
-
         var admin = new User
         {
             FirstName = "Ada",
@@ -27,7 +24,6 @@ public static class DatabaseSeeder
             DateOfBirth = new DateTime(1985, 3, 14),
             Email = "ada.admin@example.com",
             PhoneNumber = "+351910000001",
-            PasswordHash = placeholderPasswordHash,
         };
 
         var user = new User
@@ -37,7 +33,6 @@ public static class DatabaseSeeder
             DateOfBirth = new DateTime(1992, 7, 2),
             Email = "ulysses.user@example.com",
             PhoneNumber = "+351910000002",
-            PasswordHash = placeholderPasswordHash,
         };
 
         context.Users.AddRange(admin, user);

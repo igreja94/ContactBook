@@ -1,5 +1,7 @@
 ﻿using Application.DTO;
-using Application.Repositories;
+using Application.Exceptions;
+using Application.Mappers;
+using Application.Repositories.Interfaces;
 using Application.Services;
 using Domain.Entities;
 using Moq;
@@ -20,20 +22,20 @@ namespace Application.Tests.Services
 
         public UserServiceTests()
         {
-            service = new UserService(mockUserRepo.Object);
+            service = new UserService(mockUserRepo.Object, new UserMapper());
         }
 
         public async Task InitializeAsync()
         {
-            mockUserRepo.Setup(r => r.GetAllAsync())
+            mockUserRepo.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(users);
 
-            mockUserRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync((Guid id) => users.First(u => u.Id == id));
+            mockUserRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Guid id, CancellationToken _) => users.FirstOrDefault(u => u.Id == id) ?? throw new NotFoundException("User not found."));
 
-            mockUserRepo.Setup(r => r.AddAsync(It.IsAny<User>()))
+            mockUserRepo.Setup(r => r.AddAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask)
-                .Callback((User user) => users.Add(user));
+                .Callback((User user, CancellationToken _) => users.Add(user));
         }
 
         public Task DisposeAsync()
@@ -78,7 +80,7 @@ namespace Application.Tests.Services
             var nonExistentId = Guid.NewGuid();
 
             // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => service.GetByIdAsync(nonExistentId));
+            await Assert.ThrowsAsync<NotFoundException>(() => service.GetByIdAsync(nonExistentId));
         }
 
         [Fact]
@@ -94,9 +96,9 @@ namespace Application.Tests.Services
             Assert.NotEqual(newUserDto.Id, result.Id);
             Assert.NotEqual(Guid.Empty, result.Id!.Value);
             Assert.Equal(newUserDto.FirstName, result.FirstName);
-            mockUserRepo.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Once);
-            mockUserRepo.Verify(r => r.AddAsync(It.Is<User>(u => u.Id == result.Id!.Value)), Times.Once);
-            mockUserRepo.Verify(r => r.AddAsync(It.Is<User>(u => u.FirstName == newUserDto.FirstName)), Times.Once);
+            mockUserRepo.Verify(r => r.AddAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockUserRepo.Verify(r => r.AddAsync(It.Is<User>(u => u.Id == result.Id!.Value), It.IsAny<CancellationToken>()), Times.Once);
+            mockUserRepo.Verify(r => r.AddAsync(It.Is<User>(u => u.FirstName == newUserDto.FirstName), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -115,8 +117,8 @@ namespace Application.Tests.Services
             await service.UpdateAsync(updatedUserDto);
 
             // Assert
-            mockUserRepo.Verify(r => r.UpdateAsync(It.IsAny<User>()), Times.Once);
-            mockUserRepo.Verify(r => r.UpdateAsync(It.Is<User>(u => u.Id == updatedUserDto.Id && u.FirstName == updatedUserDto.FirstName)), Times.Once);
+            mockUserRepo.Verify(r => r.UpdateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockUserRepo.Verify(r => r.UpdateAsync(It.Is<User>(u => u.Id == updatedUserDto.Id && u.FirstName == updatedUserDto.FirstName), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -129,8 +131,8 @@ namespace Application.Tests.Services
             await service.DeleteAsync(existingUser.Id);
 
             // Assert
-            mockUserRepo.Verify(r => r.DeleteAsync(It.IsAny<User>()), Times.Once);
-            mockUserRepo.Verify(r => r.DeleteAsync(It.Is<User>(u => u.Id == existingUser.Id)), Times.Once);
+            mockUserRepo.Verify(r => r.DeleteAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockUserRepo.Verify(r => r.DeleteAsync(It.Is<User>(u => u.Id == existingUser.Id), It.IsAny<CancellationToken>()), Times.Once);
         }
     }
 }

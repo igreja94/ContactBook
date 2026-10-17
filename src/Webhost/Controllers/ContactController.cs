@@ -1,69 +1,68 @@
 using Application.DTO;
 using Application.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.Controllers.Abstractions;
 
 namespace Webhost.Controllers
 {
-    public class ContactController(IContactService contactService, IService<UserDto> userService)
-        : BaseController<ContactDto>(contactService)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ContactController(IContactService contactService) : ControllerBase
     {
-        public override async Task<IActionResult> Create([FromBody] ContactDto dto)
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<ContactDto>>> GetAll(CancellationToken cancellationToken)
         {
-            if (dto.UserId is null || !await UserExistsAsync(dto.UserId.Value))
-            {
-                ModelState.AddModelError(nameof(dto.UserId), "UserId must reference an existing user.");
-                return ValidationProblem(ModelState);
-            }
+            return Ok(await contactService.GetAllAsync(cancellationToken));
+        }
 
-            return await base.Create(dto);
+        [HttpGet("{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ContactDto>> GetById(Guid id, CancellationToken cancellationToken)
+        {
+            return Ok(await contactService.GetByIdAsync(id, cancellationToken));
         }
 
         [HttpGet("user/{userId:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<ContactDto>>> GetByUser(Guid userId)
+        public async Task<ActionResult<IEnumerable<ContactDto>>> GetByUser(Guid userId, CancellationToken cancellationToken)
         {
-            if (!await UserExistsAsync(userId))
-            {
-                return NotFound();
-            }
-
-            return Ok(await contactService.GetContactsByUserId(userId));
+            return Ok(await contactService.GetContactsByUserId(userId, cancellationToken));
         }
 
-        [HttpDelete("user/{userId:guid}")]
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Create([FromBody] ContactDto dto, CancellationToken cancellationToken)
+        {
+            var created = await contactService.AddAsync(dto, cancellationToken);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        }
+
+        [HttpPut]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DeleteByUser(Guid userId, [FromBody] List<Guid> contactIds)
+        public async Task<IActionResult> Update([FromBody] ContactDto dto, CancellationToken cancellationToken)
         {
-            if (contactIds.Count == 0)
+            if (dto.Id is null || dto.Id == Guid.Empty)
             {
-                ModelState.AddModelError(nameof(contactIds), "At least one contact id is required.");
+                ModelState.AddModelError(nameof(dto.Id), "A valid Id is required.");
                 return ValidationProblem(ModelState);
             }
 
-            if (!await UserExistsAsync(userId))
-            {
-                return NotFound();
-            }
-
-            await contactService.DeleteContactsByUserAsync(userId, contactIds);
+            await contactService.UpdateAsync(dto, cancellationToken);
             return NoContent();
         }
 
-        private async Task<bool> UserExistsAsync(Guid userId)
+        [HttpDelete("{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
-            try
-            {
-                await userService.GetByIdAsync(userId);
-                return true;
-            }
-            catch (InvalidOperationException)
-            {
-                return false;
-            }
+            await contactService.DeleteAsync(id, cancellationToken);
+            return NoContent();
         }
     }
 }

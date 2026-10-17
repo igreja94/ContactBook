@@ -1,44 +1,42 @@
 ﻿using Application.DTO;
-using Application.Extensions;
-using Application.Repositories;
+using Application.Exceptions;
+using Application.Mappers.Interfaces;
+using Application.Repositories.Interfaces;
 using Application.Services.Abstractions;
 using Application.Services.Interfaces;
 using Domain.Entities;
 
 namespace Application.Services
 {
-    public class ContactService(IContactRepository repository) : BaseService<Contact, ContactDto>(repository), IContactService
+    public class ContactService(IContactRepository repository, IUserRepository userRepository, IContactMapper mapper)
+        : BaseService<Contact, ContactDto>(repository, mapper), IContactService
     {
-        public async Task<IEnumerable<ContactDto>> GetContactsByUserId(Guid id)
+        public override async Task<ContactDto> AddAsync(ContactDto dto, CancellationToken cancellationToken = default)
         {
-            var contacts = await repository.GetContactsByUserAsync(id);
-            return contacts.Select(c => c.ToDto());
+            ArgumentNullException.ThrowIfNull(dto);
+
+            if (dto.UserId is null || !await userRepository.ExistsAsync(dto.UserId.Value, cancellationToken))
+            {
+                throw new ValidationFailedException(nameof(dto.UserId), "UserId must reference an existing user.");
+            }
+
+            return await base.AddAsync(dto, cancellationToken);
         }
 
-        public Task DeleteContactsByUserAsync(Guid userId, ICollection<Guid> contactIds)
+        public async Task<IEnumerable<ContactDto>> GetContactsByUserId(Guid id, CancellationToken cancellationToken = default)
         {
-            ArgumentNullException.ThrowIfNull(contactIds);
+            await EnsureUserExistsAsync(id, cancellationToken);
 
-            return repository.DeleteContactsByUserAsync(userId, contactIds);
+            var contacts = await repository.GetContactsByUserAsync(id, cancellationToken);
+            return contacts.Select(mapper.ToDto);
         }
 
-        protected override ContactDto MapToDto(Contact model)
+        private async Task EnsureUserExistsAsync(Guid userId, CancellationToken cancellationToken)
         {
-            return model.ToDto();
-        }
-
-        protected override Contact ToModel(ContactDto dto)
-        {
-            return dto.ToModel();
-        }
-
-        protected override void ApplyUpdate(Contact model, ContactDto dto)
-        {
-            model.FirstName = dto.FirstName ?? string.Empty;
-            model.LastName = dto.LastName ?? string.Empty;
-            model.DateOfBirth = dto.DateOfBirth ?? DateTime.MinValue;
-            model.Email = dto.Email ?? string.Empty;
-            model.PhoneNumber = dto.PhoneNumber ?? string.Empty;
+            if (!await userRepository.ExistsAsync(userId, cancellationToken))
+            {
+                throw new NotFoundException($"User with id {userId} not found.");
+            }
         }
     }
 }

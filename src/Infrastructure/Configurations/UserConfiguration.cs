@@ -12,10 +12,6 @@ namespace Infrastructure.Configurations
             builder.Property(u => u.Id)
                 .IsRequired();
 
-            builder.Property(u => u.PasswordHash)
-                .IsRequired()
-                .HasMaxLength(500);
-
             builder.Property(p => p.FirstName)
                .IsRequired()
                .HasMaxLength(100);

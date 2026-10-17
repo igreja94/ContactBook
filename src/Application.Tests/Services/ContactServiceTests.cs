@@ -1,5 +1,7 @@
 ﻿using Application.DTO;
-using Application.Repositories;
+using Application.Exceptions;
+using Application.Mappers;
+using Application.Repositories.Interfaces;
 using Application.Services;
 using Domain.Entities;
 using Moq;
@@ -9,6 +11,7 @@ namespace Application.Tests.Services
     public class ContactServiceTests : IAsyncLifetime
     {
         private readonly Mock<IContactRepository> mockContactRepo = new();
+        private readonly Mock<IUserRepository> mockUserRepo = new();
         private readonly ContactService service;
         private readonly Guid userId1 = Guid.NewGuid();
         private readonly Guid userId2 = Guid.NewGuid();
@@ -18,7 +21,7 @@ namespace Application.Tests.Services
 
         public ContactServiceTests()
         {
-            service = new ContactService(mockContactRepo.Object);
+            service = new ContactService(mockContactRepo.Object, mockUserRepo.Object, new ContactMapper());
         }
 
         public async Task InitializeAsync()
@@ -29,18 +32,21 @@ namespace Application.Tests.Services
                 new() { Id = Guid.NewGuid(), FirstName = "Test", LastName = "Contact2", DateOfBirth = DateTime.MinValue, Email = "contact2@test.com", PhoneNumber = "654321", UserId = userId2 }
             ];
 
-            mockContactRepo.Setup(r => r.GetAllAsync())
+            mockUserRepo.Setup(r => r.ExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Guid id, CancellationToken _) => id == userId1 || id == userId2);
+
+            mockContactRepo.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(contacts);
 
-            mockContactRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
-                .ReturnsAsync((Guid id) => contacts.FirstOrDefault(c => c.Id == id)!);
+            mockContactRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Guid id, CancellationToken _) => contacts.FirstOrDefault(c => c.Id == id)!);
 
-            mockContactRepo.Setup(r => r.AddAsync(It.IsAny<Contact>()))
+            mockContactRepo.Setup(r => r.AddAsync(It.IsAny<Contact>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask)
-                .Callback((Contact contact) => contacts.Add(contact));
+                .Callback((Contact contact, CancellationToken _) => contacts.Add(contact));
 
-            mockContactRepo.Setup(r => r.GetContactsByUserAsync(It.IsAny<Guid>()))
-                .ReturnsAsync((Guid userId) => contacts.Where(c => c.UserId == userId));
+            mockContactRepo.Setup(r => r.GetContactsByUserAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Guid userId, CancellationToken _) => contacts.Where(c => c.UserId == userId));
         }
 
         public Task DisposeAsync()
@@ -83,11 +89,11 @@ namespace Application.Tests.Services
         {
             // Arrange
             var nonExistentId = Guid.NewGuid();
-            mockContactRepo.Setup(r => r.GetByIdAsync(nonExistentId))
-                .ThrowsAsync(new InvalidOperationException("Sequence contains no matching element"));
+            mockContactRepo.Setup(r => r.GetByIdAsync(nonExistentId, It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new NotFoundException("Contact not found."));
 
             // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => service.GetByIdAsync(nonExistentId));
+            await Assert.ThrowsAsync<NotFoundException>(() => service.GetByIdAsync(nonExistentId));
         }
 
         [Fact]
@@ -102,6 +108,7 @@ namespace Application.Tests.Services
                 DateOfBirth = DateTime.MinValue,
                 Email = "new@test.com",
                 PhoneNumber = "999999",
+                UserId = userId1,
             };
 
             // Act
@@ -111,9 +118,31 @@ namespace Application.Tests.Services
             Assert.NotEqual(newContactDto.Id, result.Id);
             Assert.NotEqual(Guid.Empty, result.Id!.Value);
             Assert.Equal(newContactDto.FirstName, result.FirstName);
-            mockContactRepo.Verify(r => r.AddAsync(It.IsAny<Contact>()), Times.Once);
-            mockContactRepo.Verify(r => r.AddAsync(It.Is<Contact>(c => c.Id == result.Id!.Value)), Times.Once);
-            mockContactRepo.Verify(r => r.AddAsync(It.Is<Contact>(c => c.FirstName == newContactDto.FirstName)), Times.Once);
+            mockContactRepo.Verify(r => r.AddAsync(It.IsAny<Contact>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockContactRepo.Verify(r => r.AddAsync(It.Is<Contact>(c => c.Id == result.Id!.Value), It.IsAny<CancellationToken>()), Times.Once);
+            mockContactRepo.Verify(r => r.AddAsync(It.Is<Contact>(c => c.FirstName == newContactDto.FirstName), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddAsync_ShouldThrowValidation_WhenUserDoesNotExist()
+        {
+            // Arrange
+            var dto = new ContactDto { FirstName = "New", LastName = "Contact", UserId = Guid.NewGuid() };
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<ValidationFailedException>(() => service.AddAsync(dto));
+            Assert.Equal(nameof(ContactDto.UserId), exception.PropertyName);
+            mockContactRepo.Verify(r => r.AddAsync(It.IsAny<Contact>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task AddAsync_ShouldThrowValidation_WhenUserIdIsMissing()
+        {
+            // Arrange
+            var dto = new ContactDto { FirstName = "New", LastName = "Contact" };
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ValidationFailedException>(() => service.AddAsync(dto));
         }
 
         [Fact]
@@ -135,8 +164,8 @@ namespace Application.Tests.Services
             await service.UpdateAsync(updatedContactDto);
 
             // Assert
-            mockContactRepo.Verify(r => r.UpdateAsync(It.IsAny<Contact>()), Times.Once);
-            mockContactRepo.Verify(r => r.UpdateAsync(It.Is<Contact>(c => c.Id == updatedContactDto.Id && c.FirstName == updatedContactDto.FirstName)), Times.Once);
+            mockContactRepo.Verify(r => r.UpdateAsync(It.IsAny<Contact>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockContactRepo.Verify(r => r.UpdateAsync(It.Is<Contact>(c => c.Id == updatedContactDto.Id && c.FirstName == updatedContactDto.FirstName), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -149,8 +178,8 @@ namespace Application.Tests.Services
             await service.DeleteAsync(existingContact.Id);
 
             // Assert
-            mockContactRepo.Verify(r => r.DeleteAsync(It.IsAny<Contact>()), Times.Once);
-            mockContactRepo.Verify(r => r.DeleteAsync(It.Is<Contact>(c => c.Id == existingContact.Id)), Times.Once);
+            mockContactRepo.Verify(r => r.DeleteAsync(It.IsAny<Contact>(), It.IsAny<CancellationToken>()), Times.Once);
+            mockContactRepo.Verify(r => r.DeleteAsync(It.Is<Contact>(c => c.Id == existingContact.Id), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -172,20 +201,14 @@ namespace Application.Tests.Services
             await service.UpdateAsync(dto);
 
             // Assert
-            mockContactRepo.Verify(r => r.UpdateAsync(It.Is<Contact>(c => c.UserId == ownerId)), Times.Once);
+            mockContactRepo.Verify(r => r.UpdateAsync(It.Is<Contact>(c => c.UserId == ownerId), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
-        public async Task DeleteContactsByUserAsync_ShouldDelegateToRepository()
+        public async Task GetContactsByUserId_ShouldThrowNotFound_WhenUserDoesNotExist()
         {
-            // Arrange
-            var contactIds = contacts.Select(c => c.Id).ToList();
-
-            // Act
-            await service.DeleteContactsByUserAsync(userId1, contactIds);
-
-            // Assert
-            mockContactRepo.Verify(r => r.DeleteContactsByUserAsync(userId1, It.Is<ICollection<Guid>>(ids => ids.SequenceEqual(contactIds))), Times.Once);
+            // Act & Assert
+            await Assert.ThrowsAsync<NotFoundException>(() => service.GetContactsByUserId(Guid.NewGuid()));
         }
 
         [Fact]
@@ -199,7 +222,7 @@ namespace Application.Tests.Services
                 new() { Id = Guid.NewGuid(), FirstName = "Contact", LastName = "B", DateOfBirth = DateTime.MinValue, Email = "b@test.com", PhoneNumber = "222222", UserId = userGuid },
             };
 
-            mockContactRepo.Setup(r => r.GetContactsByUserAsync(userGuid))
+            mockContactRepo.Setup(r => r.GetContactsByUserAsync(userGuid, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(userContacts);
 
             // Act
