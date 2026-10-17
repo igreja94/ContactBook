@@ -14,7 +14,7 @@ A contact book REST API built with .NET 10, following Clean Architecture. Data i
 ## Requirements
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- [Docker](https://www.docker.com/products/docker-desktop/) running SQL Server in a container
+- [Docker](https://www.docker.com/products/docker-desktop/)
 - Optional: `dotnet tool install --global dotnet-ef` to manage migrations
 
 ## Run
