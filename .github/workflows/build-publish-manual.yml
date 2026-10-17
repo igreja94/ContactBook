@@ -1,4 +1,4 @@
-name: .NET Docker Build (Manual)
+name: Build and Publish (manual)
 
 on:
   workflow_dispatch:
