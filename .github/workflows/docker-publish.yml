@@ -1,0 +1,48 @@
+name: Docker Publish
+
+on:
+  workflow_call:
+    inputs:
+      use-commit-sha-tag:
+        description: Tag the image with the short commit SHA instead of latest
+        type: boolean
+        default: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Compute image name
+      id: image
+      env:
+        USE_SHA_TAG: ${{ inputs.use-commit-sha-tag }}
+      run: |
+        tag=latest
+        if [ "$USE_SHA_TAG" = "true" ]; then tag="${GITHUB_SHA:0:7}"; fi
+        echo "name=ghcr.io/${GITHUB_REPOSITORY,,}:$tag" >> "$GITHUB_OUTPUT"
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./src
+        file: ./src/Webhost/Dockerfile
+        push: true
+        tags: ${{ steps.image.outputs.name }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
