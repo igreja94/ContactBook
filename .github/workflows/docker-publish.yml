@@ -3,10 +3,10 @@ name: Docker Publish
 on:
   workflow_call:
     inputs:
-      use-commit-sha-tag:
-        description: Tag the image with the short commit SHA instead of latest
-        type: boolean
-        default: false
+      version:
+        description: Version (X.Y) to tag the image with, in addition to latest
+        type: string
+        default: ''
 
 jobs:
   publish:
@@ -21,11 +21,12 @@ jobs:
     - name: Compute image name
       id: image
       env:
-        USE_SHA_TAG: ${{ inputs.use-commit-sha-tag }}
+        VERSION: ${{ inputs.version }}
       run: |
-        tag=latest
-        if [ "$USE_SHA_TAG" = "true" ]; then tag="${GITHUB_SHA:0:7}"; fi
-        echo "name=ghcr.io/${GITHUB_REPOSITORY,,}:$tag" >> "$GITHUB_OUTPUT"
+        image=ghcr.io/${GITHUB_REPOSITORY,,}
+        tags="$image:latest"
+        if [ -n "$VERSION" ]; then tags="$image:$VERSION,$tags"; fi
+        echo "name=$tags" >> "$GITHUB_OUTPUT"
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
