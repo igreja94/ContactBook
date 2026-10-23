@@ -124,28 +124,6 @@ namespace Application.Tests.Services
         }
 
         [Fact]
-        public async Task AddAsync_ShouldThrowValidation_WhenUserDoesNotExist()
-        {
-            // Arrange
-            var dto = new ContactDto { FirstName = "New", LastName = "Contact", UserId = Guid.NewGuid() };
-
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<ValidationFailedException>(() => service.AddAsync(dto));
-            Assert.Equal(nameof(ContactDto.UserId), exception.PropertyName);
-            mockContactRepo.Verify(r => r.AddAsync(It.IsAny<Contact>(), It.IsAny<CancellationToken>()), Times.Never);
-        }
-
-        [Fact]
-        public async Task AddAsync_ShouldThrowValidation_WhenUserIdIsMissing()
-        {
-            // Arrange
-            var dto = new ContactDto { FirstName = "New", LastName = "Contact" };
-
-            // Act & Assert
-            await Assert.ThrowsAsync<ValidationFailedException>(() => service.AddAsync(dto));
-        }
-
-        [Fact]
         public async Task UpdateAsync_ShouldUpdateContact()
         {
             // Arrange

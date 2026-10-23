@@ -58,5 +58,5 @@ dotnet_diagnostic.SA1101.severity = none
 generated_code = true
 
 # Tests use Method_Scenario naming
-[**.Tests/**/*.cs]
+[Tests/**/*.cs]
 dotnet_diagnostic.CA1707.severity = none
