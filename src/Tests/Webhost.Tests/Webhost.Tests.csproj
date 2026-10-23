@@ -11,18 +11,14 @@
     <PackageReference Include="Aspire.Hosting.Testing" Version="13.6.1" />
     <PackageReference Include="coverlet.collector" Version="10.1.0" />
     <PackageReference Include="GitHubActionsTestLogger" Version="3.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.13" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
-    <PackageReference Include="Moq" Version="4.21.0" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="4.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AppHost\AppHost.csproj" />
-    <ProjectReference Include="..\Application\Application.csproj" />
-    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
-    <ProjectReference Include="..\Webhost\Webhost.csproj" />
+    <ProjectReference Include="..\..\AppHost\AppHost.csproj" />
+    <ProjectReference Include="..\..\Webhost\Webhost.csproj" />
   </ItemGroup>
 
   <ItemGroup>

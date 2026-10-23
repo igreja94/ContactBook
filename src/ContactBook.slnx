@@ -5,5 +5,7 @@
   <Project Path="ServiceDefaults/ServiceDefaults.csproj" />
   <Project Path="Domain/Domain.csproj" />
   <Project Path="Infrastructure/Infrastructure.csproj" />
-  <Project Path="Tests/Tests.csproj" />
+  <Project Path="Tests/Application.Tests/Application.Tests.csproj" />
+  <Project Path="Tests/Infrastructure.Tests/Infrastructure.Tests.csproj" />
+  <Project Path="Tests/Webhost.Tests/Webhost.Tests.csproj" />
 </Solution>
