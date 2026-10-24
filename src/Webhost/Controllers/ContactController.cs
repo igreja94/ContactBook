@@ -36,6 +36,12 @@ namespace Webhost.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create([FromBody] ContactDto dto, CancellationToken cancellationToken)
         {
+            if (dto.UserId is null || dto.UserId == Guid.Empty)
+            {
+                ModelState.AddModelError(nameof(dto.UserId), "A valid UserId is required.");
+                return ValidationProblem(ModelState);
+            }
+
             var created = await contactService.AddAsync(dto, cancellationToken);
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }

@@ -127,7 +127,7 @@ public class ContactControllerTests(WebhostFixture fixture)
     }
 
     [Fact]
-    public async Task Create_ReturnsBadRequest_WhenUserDoesNotExist()
+    public async Task Create_ReturnsConflict_WhenUserDoesNotExist()
     {
         var response = await client.PostAsJsonAsync("/api/Contact", new ContactDto
         {
@@ -137,7 +137,7 @@ public class ContactControllerTests(WebhostFixture fixture)
             UserId = Guid.NewGuid(),
         });
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 
     [Fact]

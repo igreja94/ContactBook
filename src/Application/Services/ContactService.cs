@@ -11,18 +11,6 @@ namespace Application.Services
     public class ContactService(IContactRepository repository, IUserRepository userRepository, IContactMapper mapper)
         : BaseService<Contact, ContactDto>(repository, mapper), IContactService
     {
-        public override async Task<ContactDto> AddAsync(ContactDto dto, CancellationToken cancellationToken = default)
-        {
-            ArgumentNullException.ThrowIfNull(dto);
-
-            if (dto.UserId is null || !await userRepository.ExistsAsync(dto.UserId.Value, cancellationToken))
-            {
-                throw new ValidationFailedException(nameof(dto.UserId), "UserId must reference an existing user.");
-            }
-
-            return await base.AddAsync(dto, cancellationToken);
-        }
-
         public async Task<IEnumerable<ContactDto>> GetContactsByUserId(Guid id, CancellationToken cancellationToken = default)
         {
             await EnsureUserExistsAsync(id, cancellationToken);
